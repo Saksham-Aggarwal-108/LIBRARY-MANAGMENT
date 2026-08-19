@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | BookNest Library Management System</title>
+  <link rel="icon" type="image/png" href="assets/images/logo/favicon.png">
+  
+  <link rel="stylesheet" href="assets/css/variables.css">
+  <link rel="stylesheet" href="assets/css/animations.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/responsive.css">
+  
+  <script>
+    (function() {
+      const theme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark-mode');
+      }
+    })();
+  </script>
+</head>
+<body>
+
+  <header>
+    <div class="container navbar-container">
+      <a href="index.html" class="logo-link">
+        <img src="assets/images/logo/logo.png" alt="BookNest Logo" class="logo-img">
+        <span class="logo-text">Book<span>Nest</span></span>
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav class="nav-menu">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="books.html" class="nav-link">Books</a>
+        <a href="gallery.html" class="nav-link">Gallery</a>
+        <a href="contact.html" class="nav-link">Contact</a>
+        <span class="nav-auth-btns guest-only">
+          <a href="login.html" class="nav-link active">Login</a>
+          <a href="register.html" class="btn btn-primary btn-sm">Register</a>
+        </span>
+        <span class="nav-auth-btns user-only" style="display: none;">
+          <span id="user-welcome-text" style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500; white-space: nowrap; margin-right: 10px;"></span>
+          <a href="user-dashboard.html" class="nav-link" style="margin-right: 10px;">Dashboard</a>
+          <a href="#" id="logout-btn" class="btn btn-secondary btn-sm">Logout</a>
+        </span>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">
+          <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+          <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="header-spacer"></div>
+
+  <nav class="breadcrumb-wrap" aria-label="Breadcrumb">
+    <div class="container">
+      <ol class="breadcrumb-list">
+        <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+        <li class="breadcrumb-separator">/</li>
+        <li class="breadcrumb-item breadcrumb-active">Login</li>
+      </ol>
+    </div>
+  </nav>
+
+  <main class="auth-layout">
+    <div class="container">
+      
+      <div class="auth-card form-card anim-slide-up">
+        <div class="auth-header">
+          <h2>Member Login</h2>
+          <p class="section-subtitle">Sign in to check out books and reserve workspaces</p>
+        </div>
+
+        <form id="login-form" novalidate>
+          <div class="form-group">
+            <label for="login-username">Username or Email</label>
+            <input type="text" id="login-username" class="form-control" placeholder="Enter username/email" autocomplete="username">
+          </div>
+
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <div class="password-input-wrap">
+              <input type="password" id="login-password" class="form-control" placeholder="Enter password" autocomplete="current-password">
+              <button type="button" class="password-toggle-btn" aria-label="Toggle password visibility">👁️</button>
+            </div>
+          </div>
+
+          <div style="background-color: var(--accent-light); padding: var(--spacing-sm) var(--spacing-md); border-radius: var(--radius-sm); font-size: 0.8rem; color: var(--accent-hover); margin-bottom: var(--spacing-md); border-left: 3px solid var(--accent-color);">
+            💡 <strong>Quick Test Credentials:</strong><br>
+            Username: <code>student</code> &nbsp;|&nbsp; Password: <code>student123</code>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
+        </form>
+
+        <div class="auth-footer">
+          <p>Don't have a BookNest account? <a href="register.html">Register here</a></p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col-brand">
+          <div class="footer-logo">Book<span>Nest</span></div>
+          <p class="footer-desc">A state-of-the-art educational sanctuary offering access to thousands of books, research papers, and study resources.</p>
+          <div class="footer-socials">
+            <a href="#" class="footer-social-link" aria-label="Twitter">𝕏</a>
+            <a href="#" class="footer-social-link" aria-label="Facebook">f</a>
+            <a href="#" class="footer-social-link" aria-label="LinkedIn">in</a>
+          </div>
+        </div>
+        <div class="footer-col-links">
+          <h4 class="footer-title">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="books.html">Browse Books</a></li>
+            <li><a href="gallery.html">Gallery Spaces</a></li>
+            <li><a href="contact.html">Contact Support</a></li>
+          </ul>
+        </div>
+        <div class="footer-col-hours">
+          <h4 class="footer-title">Working Hours</h4>
+          <ul class="footer-links" style="color: rgba(248,250,252,0.65); font-size: 0.9rem;">
+            <li style="margin-bottom: 8px;">Mon - Fri: 8:00 AM - 8:00 PM</li>
+            <li style="margin-bottom: 8px;">Saturday: 9:00 AM - 5:00 PM</li>
+            <li style="margin-bottom: 8px;">Sunday: Closed</li>
+          </ul>
+        </div>
+        <div class="footer-col-contact">
+          <h4 class="footer-title">Contact Info</h4>
+          <ul class="footer-contact">
+            <li><span class="footer-contact-icon">📍</span>Central library Chitkara</li>
+            <li><span class="footer-contact-icon">📞</span>9876543214</li>
+            <li><span class="footer-contact-icon">✉️</span> support@booknest.gmail.com</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 BookNest Library System. All Rights Reserved. Course Academic Project.</p>
+        <a href="#" class="nav-link" style="font-size: 0.85rem;">Privacy Policy</a>
+      </div>
+    </div>
+  </footer>
+
+  <button class="back-to-top" aria-label="Scroll back to top">↑</button>
+
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/validation.js"></script>
+</body>
+</html>

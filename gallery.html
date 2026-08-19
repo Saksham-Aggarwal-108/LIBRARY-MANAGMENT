@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library Gallery | BookNest Library Management System</title>
+  <meta name="description" content="Tour the modern study spaces, private cubicles, grand staircase, and extensive book corridors of the BookNest library.">
+  <link rel="icon" type="image/png" href="assets/images/logo/favicon.png">
+  
+  <link rel="stylesheet" href="assets/css/variables.css">
+  <link rel="stylesheet" href="assets/css/animations.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/responsive.css">
+  
+  <script>
+    (function() {
+      const theme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark-mode');
+      }
+    })();
+  </script>
+</head>
+<body>
+
+  <header>
+    <div class="container navbar-container">
+      <a href="index.html" class="logo-link">
+        <img src="assets/images/logo/logo.png" alt="BookNest Logo" class="logo-img">
+        <span class="logo-text">Book<span>Nest</span></span>
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav class="nav-menu">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="books.html" class="nav-link">Books</a>
+        <a href="gallery.html" class="nav-link active">Gallery</a>
+        <a href="contact.html" class="nav-link">Contact</a>
+        <span class="nav-auth-btns guest-only">
+          <a href="login.html" class="nav-link">Login</a>
+          <a href="register.html" class="btn btn-primary btn-sm">Register</a>
+        </span>
+        <span class="nav-auth-btns user-only" style="display: none;">
+          <span id="user-welcome-text" style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500; white-space: nowrap; margin-right: 10px;"></span>
+          <a href="user-dashboard.html" class="nav-link" style="margin-right: 10px;">Dashboard</a>
+          <a href="#" id="logout-btn" class="btn btn-secondary btn-sm">Logout</a>
+        </span>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">
+          <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+          <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="header-spacer"></div>
+
+  <nav class="breadcrumb-wrap" aria-label="Breadcrumb">
+    <div class="container">
+      <ol class="breadcrumb-list">
+        <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+        <li class="breadcrumb-separator">/</li>
+        <li class="breadcrumb-item breadcrumb-active">Gallery</li>
+      </ol>
+    </div>
+  </nav>
+
+  <main class="section">
+    <div class="container">
+      
+      <div class="section-title-wrap scroll-reveal">
+        <h2 class="section-title">Library Gallery</h2>
+        <p class="section-subtitle">Take a visual tour through our premium study spaces, digital labs, and extensive collections.</p>
+      </div>
+
+      <div class="gallery-grid" id="gallery-container">
+        
+        <div class="gallery-item scroll-reveal" role="button" aria-label="Expand image - BookNest Exterior">
+          <img src="assets/images/gallery/gallery1.jpg" alt="BookNest Exterior" data-desc="The striking modern architectural facade of BookNest.">
+          <div class="gallery-item-overlay">
+            <span>BookNest Exterior</span>
+          </div>
+        </div>
+
+        <div class="gallery-item scroll-reveal" role="button" aria-label="Expand image - Reading Area">
+          <img src="assets/images/gallery/gallery2.jpg" alt="Reading Area" data-desc="Long oak study desks equipped with warm, anti-glare lamps for reading comfort.">
+          <div class="gallery-item-overlay">
+            <span>Reading Area</span>
+          </div>
+        </div>
+
+        <div class="gallery-item scroll-reveal" role="button" aria-label="Expand image - Bookshelves">
+          <img src="assets/images/gallery/gallery3.jpg" alt="Bookshelves" data-desc="Towering bookshelves containing thousands of fiction works, research papers, and classical volumes.">
+          <div class="gallery-item-overlay">
+            <span>Bookshelves</span>
+          </div>
+        </div>
+
+        <div class="gallery-item scroll-reveal" role="button" aria-label="Expand image - Private Study Rooms">
+          <img src="assets/images/gallery/gallery4.jpg" alt="Private Study Rooms" data-desc="Soundproof cubicles for student group studies, whiteboards, and screens.">
+          <div class="gallery-item-overlay">
+            <span>Private Study Rooms</span>
+          </div>
+        </div>
+
+        <div class="gallery-item scroll-reveal" role="button" aria-label="Expand image - Computer Lab">
+          <img src="assets/images/gallery/gallery5.jpg" alt="Computer Lab" data-desc="Digital research stations connected directly to IEEE, JSTOR, and major academic databases.">
+          <div class="gallery-item-overlay">
+            <span>Computer Lab</span>
+          </div>
+        </div>
+
+        <div class="gallery-item scroll-reveal" role="button" aria-label="Expand image - Students Reading">
+          <img src="assets/images/gallery/gallery6.jpg" alt="Students Reading" data-desc="Academic study environments supporting focused student research projects.">
+          <div class="gallery-item-overlay">
+            <span>Students Reading</span>
+          </div>
+        </div>
+
+        <div class="gallery-item scroll-reveal" role="button" aria-label="Expand image - Library Interior Foyer">
+          <img src="assets/images/gallery/gallery7.jpg" alt="Library Interior Foyer" data-desc="The grand interior foyer featuring a spacious design, skylights, and academic display boards.">
+          <div class="gallery-item-overlay">
+            <span>Grand Foyer</span>
+          </div>
+        </div>
+
+        <div class="gallery-item scroll-reveal" role="button" aria-label="Expand image - Cozy Reading Corner">
+          <img src="assets/images/gallery/gallery8.jpg" alt="Cozy Reading Corner" data-desc="Relaxed armchairs, carpets, and soft warm lighting for leisure reading.">
+          <div class="gallery-item-overlay">
+            <span>Cozy Corner</span>
+          </div>
+        </div>
+
+        <div class="gallery-item scroll-reveal" role="button" aria-label="Expand image - Study Cubicles">
+          <img src="assets/images/gallery/gallery9.jpg" alt="Study Cubicles" data-desc="Wood-paneled individual desks for focused individual preparation.">
+          <div class="gallery-item-overlay">
+            <span>Study Cubicles</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="lightbox-modal" class="lightbox-modal" aria-hidden="true" role="dialog" aria-label="Image display window">
+    <span class="lightbox-close" id="lightbox-close" tabindex="0" role="button" aria-label="Close image button">&times;</span>
+    <img class="lightbox-content" id="lightbox-img" alt="Zoomed view">
+    <div id="lightbox-caption" class="lightbox-caption"></div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col-brand">
+          <div class="footer-logo">Book<span>Nest</span></div>
+          <p class="footer-desc">A state-of-the-art educational sanctuary offering access to thousands of books, research papers, and study resources.</p>
+          <div class="footer-socials">
+            <a href="#" class="footer-social-link" aria-label="Twitter">𝕏</a>
+            <a href="#" class="footer-social-link" aria-label="Facebook">f</a>
+            <a href="#" class="footer-social-link" aria-label="LinkedIn">in</a>
+          </div>
+        </div>
+        <div class="footer-col-links">
+          <h4 class="footer-title">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="books.html">Browse Books</a></li>
+            <li><a href="gallery.html">Gallery Spaces</a></li>
+            <li><a href="contact.html">Contact Support</a></li>
+          </ul>
+        </div>
+        <div class="footer-col-hours">
+          <h4 class="footer-title">Working Hours</h4>
+          <ul class="footer-links" style="color: rgba(248,250,252,0.65); font-size: 0.9rem;">
+            <li style="margin-bottom: 8px;">Mon - Fri: 8:00 AM - 8:00 PM</li>
+            <li style="margin-bottom: 8px;">Saturday: 9:00 AM - 5:00 PM</li>
+            <li style="margin-bottom: 8px;">Sunday: Closed</li>
+          </ul>
+        </div>
+        <div class="footer-col-contact">
+          <h4 class="footer-title">Contact Info</h4>
+          <ul class="footer-contact">
+            <li><span class="footer-contact-icon">📍</span>Central library Chitkara</li>
+            <li><span class="footer-contact-icon">📞</span>9876543214</li>
+            <li><span class="footer-contact-icon">✉️</span> support@booknest.gmail.com</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 BookNest Library System. All Rights Reserved. Course Academic Project.</p>
+        <a href="#" class="nav-link" style="font-size: 0.85rem;">Privacy Policy</a>
+      </div>
+    </div>
+  </footer>
+
+  <button class="back-to-top" aria-label="Scroll back to top">↑</button>
+
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/gallery.js"></script>
+</body>
+</html>

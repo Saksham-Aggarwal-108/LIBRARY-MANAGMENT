@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Us | BookNest Library Management System</title>
+  <meta name="description"
+    content="Discover the mission, vision, services, objectives, and state-of-the-art facilities available at BookNest library.">
+  <link rel="icon" type="image/png" href="assets/images/logo/favicon.png">
+
+  <link rel="stylesheet" href="assets/css/variables.css">
+  <link rel="stylesheet" href="assets/css/animations.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/responsive.css">
+
+  <script>
+    (function () {
+      const theme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark-mode');
+      }
+    })();
+  </script>
+</head>
+
+<body>
+  <header>
+    <div class="container navbar-container">
+      <a href="index.html" class="logo-link">
+        <img src="assets/images/logo/logo.png" alt="BookNest Logo" class="logo-img">
+        <span class="logo-text">Book<span>Nest</span></span>
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav class="nav-menu">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="about.html" class="nav-link active">About</a>
+        <a href="books.html" class="nav-link">Books</a>
+        <a href="gallery.html" class="nav-link">Gallery</a>
+        <a href="contact.html" class="nav-link">Contact</a>
+        <span class="nav-auth-btns guest-only">
+          <a href="login.html" class="nav-link">Login</a>
+          <a href="register.html" class="btn btn-primary btn-sm">Register</a>
+        </span>
+        <span class="nav-auth-btns user-only" style="display: none;">
+          <span id="user-welcome-text"
+            style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500; white-space: nowrap; margin-right: 10px;"></span>
+          <a href="user-dashboard.html" class="nav-link" style="margin-right: 10px;">Dashboard</a>
+          <a href="#" id="logout-btn" class="btn btn-secondary btn-sm">Logout</a>
+        </span>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">
+          <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="header-spacer"></div>
+
+  <nav class="breadcrumb-wrap" aria-label="Breadcrumb">
+    <div class="container">
+      <ol class="breadcrumb-list">
+        <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+        <li class="breadcrumb-separator">/</li>
+        <li class="breadcrumb-item breadcrumb-active">About</li>
+      </ol>
+    </div>
+  </nav>
+
+  <main>
+
+    <section class="section">
+      <div class="container">
+        <div class="about-grid">
+          <div class="about-content scroll-reveal">
+            <h2>Nurturing Minds, Connecting Ideas</h2>
+            <p class="about-p">Established in 2018, BookNest serves as the primary educational and research sanctuary
+              for students, researchers, and community members. We combine a curated classical book repository with
+              modern digital database hubs to create an inclusive, quiet, and inspiring study workspace.</p>
+            <p class="about-p">We aim to empower every patron by providing free and democratic access to high-quality
+              academic texts, scientific journals, technology documentation, and history archives.</p>
+
+            <div class="values-list">
+              <div class="value-item">
+                <span class="value-icon">✓</span>
+                <div>
+                  <strong>Excellence:</strong>
+                  <span style="display: block; font-size: 0.85rem; color: var(--text-muted);">Curating the finest
+                    learning resources.</span>
+                </div>
+              </div>
+              <div class="value-item">
+                <span class="value-icon">✓</span>
+                <div>
+                  <strong>Accessibility:</strong>
+                  <span style="display: block; font-size: 0.85rem; color: var(--text-muted);">Removing barriers to
+                    academic databases.</span>
+                </div>
+              </div>
+              <div class="value-item">
+                <span class="value-icon">✓</span>
+                <div>
+                  <strong>Innovation:</strong>
+                  <span style="display: block; font-size: 0.85rem; color: var(--text-muted);">Digital index searching
+                    and reservation features.</span>
+                </div>
+              </div>
+              <div class="value-item">
+                <span class="value-icon">✓</span>
+                <div>
+                  <strong>Inclusivity:</strong>
+                  <span style="display: block; font-size: 0.85rem; color: var(--text-muted);">Welcoming environment for
+                    all learners.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="about-img-wrap scroll-reveal">
+            <img src="https://i.pinimg.com/736x/e5/5e/0d/e55e0dfd9b8b95dd74fd4bb19bd58ea6.jpg"
+              alt="Interior architectural view of LibSphere study halls">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="background-color: var(--bg-secondary);">
+      <div class="container">
+        <div class="section-title-wrap scroll-reveal">
+          <h2 class="section-title">Our Premium Facilities</h2>
+          <p class="section-subtitle">BookNest offers a spectrum of physical study zones and academic utilities.</p>
+        </div>
+
+        <div class="facilities-grid">
+          <div class="facility-card scroll-reveal">
+            <h4>🤫 Silent Zones</h4>
+            <p>Designated quiet study wings featuring private desks, dividers, and warm reading lamps.</p>
+          </div>
+          <div class="facility-card scroll-reveal">
+            <h4>🖥️ Digital Labs</h4>
+            <p>Modern PC stations with high-speed internet and database subscriptions to IEEE, JSTOR, and ACM.</p>
+          </div>
+          <div class="facility-card scroll-reveal">
+            <h4>🤝 Group Rooms</h4>
+            <p>Soundproof project rooms equipped with whiteboards and displays for team collaboration.</p>
+          </div>
+          <div class="facility-card scroll-reveal">
+            <h4>☕ Reading Lounge</h4>
+            <p>A relaxed, semi-casual seating space where patrons can read magazines, novels, and news.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="about-grid" style="grid-template-columns: 1fr 1.2fr;">
+          <div class="about-img-wrap scroll-reveal" style="box-shadow: none;">
+            <img src="assets/images/books/book6.jpg" alt="A student researching in front of book bookshelves">
+          </div>
+
+          <div class="about-content scroll-reveal">
+            <h2>Our Strategic Objectives</h2>
+            <p class="about-p">To remain a top-tier learning partner, BookNest works continuously to achieve core
+              developmental objectives:</p>
+            <ul class="footer-links"
+              style="display: flex; flex-direction: column; gap: var(--spacing-sm); margin-top: var(--spacing-md); margin-bottom: var(--spacing-lg);">
+              <li style="display: flex; gap: 10px; color: var(--text-muted);">
+                <span style="color: var(--accent-color);">▶</span> Complete digitisation of regional historical
+                transcripts and university dissertations.
+              </li>
+              <li style="display: flex; gap: 10px; color: var(--text-muted);">
+                <span style="color: var(--accent-color);">▶</span> Progressive expansion of the software development and
+                engineering textbook inventory.
+              </li>
+              <li style="display: flex; gap: 10px; color: var(--text-muted);">
+                <span style="color: var(--accent-color);">▶</span> Hosting weekly writing circles, guest book readings,
+                and research methodology workshops.
+              </li>
+              <li style="display: flex; gap: 10px; color: var(--text-muted);">
+                <span style="color: var(--accent-color);">▶</span> Bridging local community learning gaps by offering
+                free internet courses to senior citizens and children.
+              </li>
+            </ul>
+            <a href="books.html" class="btn btn-primary">Browse Library Collection</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col-brand">
+          <div class="footer-logo">Book<span>Nest</span></div>
+          <p class="footer-desc">A state-of-the-art educational sanctuary offering access to thousands of books,
+            research papers, and study resources.</p>
+          <div class="footer-socials">
+            <a href="#" class="footer-social-link" aria-label="Twitter">𝕏</a>
+            <a href="#" class="footer-social-link" aria-label="Facebook">f</a>
+            <a href="#" class="footer-social-link" aria-label="LinkedIn">in</a>
+          </div>
+        </div>
+        <div class="footer-col-links">
+          <h4 class="footer-title">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="books.html">Browse Books</a></li>
+            <li><a href="gallery.html">Gallery Spaces</a></li>
+            <li><a href="contact.html">Contact Support</a></li>
+          </ul>
+        </div>
+        <div class="footer-col-hours">
+          <h4 class="footer-title">Working Hours</h4>
+          <ul class="footer-links" style="color: rgba(248,250,252,0.65); font-size: 0.9rem;">
+            <li style="margin-bottom: 8px;">Mon - Fri: 8:00 AM - 8:00 PM</li>
+            <li style="margin-bottom: 8px;">Saturday: 9:00 AM - 5:00 PM</li>
+            <li style="margin-bottom: 8px;">Sunday: Closed</li>
+          </ul>
+        </div>
+        <div class="footer-col-contact">
+          <h4 class="footer-title">Contact Info</h4>
+          <ul class="footer-contact">
+            <li><span class="footer-contact-icon">📍</span>Central library Chitkara</li>
+            <li><span class="footer-contact-icon">📞</span>9876543214</li>
+            <li><span class="footer-contact-icon">✉️</span> support@booknest.gmail.com</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 BookNest Library System. All Rights Reserved. Course Academic Project.</p>
+        <a href="#" class="nav-link" style="font-size: 0.85rem;">Privacy Policy</a>
+      </div>
+    </div>
+  </footer>
+
+  <button class="back-to-top" aria-label="Scroll back to top">↑</button>
+
+  <script src="assets/js/main.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Dashboard | BookNest Library Management System</title>
+  <link rel="icon" type="image/png" href="assets/images/logo/favicon.png">
+  
+  <link rel="stylesheet" href="assets/css/variables.css">
+  <link rel="stylesheet" href="assets/css/animations.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/responsive.css">
+  
+  <script>
+    (function() {
+      const theme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark-mode');
+      }
+    })();
+  </script>
+</head>
+<body id="user-dashboard-page">
+
+  <header>
+    <div class="container navbar-container">
+      <a href="index.html" class="logo-link">
+        <img src="assets/images/logo/logo.png" alt="BookNest Logo" class="logo-img">
+        <span class="logo-text">Book<span>Nest</span></span>
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav class="nav-menu">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="books.html" class="nav-link">Books</a>
+        <a href="gallery.html" class="nav-link">Gallery</a>
+        <a href="contact.html" class="nav-link">Contact</a>
+        <span class="nav-auth-btns guest-only">
+          <a href="login.html" class="nav-link">Login</a>
+          <a href="register.html" class="btn btn-primary btn-sm">Register</a>
+        </span>
+        <span class="nav-auth-btns user-only" style="display: none;">
+          <span id="user-welcome-text" style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500; white-space: nowrap; margin-right: 10px;"></span>
+          <a href="user-dashboard.html" class="nav-link active">Dashboard</a>
+          <a href="#" id="logout-btn" class="btn btn-secondary btn-sm">Logout</a>
+        </span>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">
+          <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+          <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="header-spacer"></div>
+
+  <nav class="breadcrumb-wrap" aria-label="Breadcrumb">
+    <div class="container">
+      <ol class="breadcrumb-list">
+        <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+        <li class="breadcrumb-separator">/</li>
+        <li class="breadcrumb-item breadcrumb-active">Dashboard</li>
+      </ol>
+    </div>
+  </nav>
+
+  <main class="section" style="background-color: var(--bg-secondary);">
+    <div class="container">
+      
+      <div class="dashboard-layout">
+        
+        <aside class="dashboard-sidebar scroll-reveal-left">
+          <div class="dashboard-profile-widget">
+            <div class="dashboard-avatar" id="widget-avatar">JS</div>
+            <h3 id="widget-name">Jane Student</h3>
+            <p id="widget-username" style="font-size: 0.8rem; color: var(--text-muted);">@student</p>
+          </div>
+          
+          <ul class="dashboard-menu">
+            <li>
+              <a href="#" class="dashboard-tab-btn active" data-panel="dashboard-overview">
+                <span>📊</span> Overview
+              </a>
+            </li>
+            <li>
+              <a href="#" class="dashboard-tab-btn" data-panel="dashboard-issued">
+                <span>📖</span> Issued Books
+              </a>
+            </li>
+            <li>
+              <a href="#" class="dashboard-tab-btn" data-panel="dashboard-profile">
+                <span>👤</span> Profile Information
+              </a>
+            </li>
+            <li>
+              <a href="#" class="dashboard-tab-btn" data-panel="dashboard-password">
+                <span>🔑</span> Change Password
+              </a>
+            </li>
+            <li style="margin-top: var(--spacing-md); border-top: 1px solid var(--border-color); padding-top: var(--spacing-sm);">
+              <a href="#" class="dashboard-tab-btn-logout" id="dashboard-sidebar-logout">
+                <span>🚪</span> Log Out
+              </a>
+            </li>
+          </ul>
+        </aside>
+
+        <section class="dashboard-main scroll-reveal">
+          
+          <div id="panel-dashboard-overview" class="dashboard-panel active">
+            <h2>Welcome Back, <span id="overview-welcome-name">Jane Student</span></h2>
+            <p style="color: var(--text-muted); margin-bottom: var(--spacing-lg);">Access your BookNest library borrowing logs, active cards, and due schedules.</p>
+            
+            <div class="dashboard-stats-grid">
+              <div class="dashboard-stat-card">
+                <span class="stat-icon">📖</span>
+                <div>
+                  <h4 id="stat-issued-count">2</h4>
+                  <p>Books Currently Issued</p>
+                </div>
+              </div>
+              <div class="dashboard-stat-card">
+                <span class="stat-icon" style="background-color: #d1fae5; color: var(--secondary-color);">✓</span>
+                <div>
+                  <h4 id="stat-returned-count">2</h4>
+                  <p>Returned History</p>
+                </div>
+              </div>
+              <div class="dashboard-stat-card">
+                <span class="stat-icon" style="background-color: #fee2e2; color: #ef4444;">⚠️</span>
+                <div>
+                  <h4 id="stat-overdue-count">0</h4>
+                  <p>Overdue Notices</p>
+                </div>
+              </div>
+            </div>
+
+            <div style="background-color: var(--bg-white); padding: var(--spacing-xl); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); margin-top: var(--spacing-lg);">
+              <h3 style="margin-bottom: var(--spacing-sm);">Important Announcements</h3>
+              <ul class="footer-links" style="display: flex; flex-direction: column; gap: var(--spacing-sm);">
+                <li style="display: flex; gap: 10px; color: var(--text-muted); font-size: 0.95rem;">
+                  <span style="color: var(--accent-color);">▶</span> BookNest reading week begins on May 10th. Extended opening hours (until 10 PM).
+                </li>
+                <li style="display: flex; gap: 10px; color: var(--text-muted); font-size: 0.95rem;">
+                  <span style="color: var(--accent-color);">▶</span> The computer science textbook collection has been expanded on floor 3.
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div id="panel-dashboard-issued" class="dashboard-panel">
+            <h2 style="margin-bottom: var(--spacing-md);">Your Issued Books</h2>
+            
+            <div class="form-card" style="padding: var(--spacing-md); overflow-hidden: auto;">
+              <div style="overflow-x: auto;">
+                <table class="issued-books-table">
+                  <thead>
+                    <tr>
+                      <th>Book Name</th>
+                      <th>Author</th>
+                      <th>Issue Date</th>
+                      <th>Due Date</th>
+                      <th>Return Date</th>
+                      <th>Status</th>
+                      <th>Days Left</th>
+                    </tr>
+                  </thead>
+                  <tbody id="issued-books-tbody">
+                    
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div id="panel-dashboard-profile" class="dashboard-panel">
+            <h2 style="margin-bottom: var(--spacing-md);">Profile Information</h2>
+            
+            <div class="form-card">
+              <form id="profile-edit-form" novalidate>
+                <div class="form-group">
+                  <label for="prof-fullname">Full Name</label>
+                  <input type="text" id="prof-fullname" class="form-control" placeholder="Jane Student">
+                </div>
+                
+                <div class="form-group">
+                  <label for="prof-email">Email Address</label>
+                  <input type="email" id="prof-email" class="form-control" placeholder="student@library.com">
+                </div>
+
+                <div class="form-group">
+                  <label for="prof-username">Username</label>
+                  <input type="text" id="prof-username" class="form-control" placeholder="student" readonly style="opacity: 0.7; cursor: not-allowed;">
+                </div>
+
+                <div class="form-group">
+                  <label for="prof-cardid">Library Card ID</label>
+                  <input type="text" id="prof-cardid" class="form-control" value="BN-98234-2026" readonly style="opacity: 0.7; cursor: not-allowed;">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="margin-top: var(--spacing-sm);">Save Profile Changes</button>
+              </form>
+            </div>
+          </div>
+
+          <div id="panel-dashboard-password" class="dashboard-panel">
+            <h2 style="margin-bottom: var(--spacing-md);">Change Password</h2>
+            
+            <div class="form-card">
+              <form id="dashboard-pwd-form" novalidate>
+                <div class="form-group">
+                  <label for="pwd-current">Current Password</label>
+                  <div class="password-input-wrap">
+                    <input type="password" id="pwd-current" class="form-control" placeholder="Enter current password">
+                    <button type="button" class="password-toggle-btn">👁️</button>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="pwd-new">New Password</label>
+                  <div class="password-input-wrap">
+                    <input type="password" id="pwd-new" class="form-control" placeholder="Enter new password">
+                    <button type="button" class="password-toggle-btn">👁️</button>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="pwd-confirm">Confirm New Password</label>
+                  <div class="password-input-wrap">
+                    <input type="password" id="pwd-confirm" class="form-control" placeholder="Confirm new password">
+                    <button type="button" class="password-toggle-btn">👁️</button>
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="margin-top: var(--spacing-sm);">Update Password</button>
+              </form>
+            </div>
+          </div>
+
+        </section>
+
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col-brand">
+          <div class="footer-logo">Book<span>Nest</span></div>
+          <p class="footer-desc">A state-of-the-art educational sanctuary offering access to thousands of books, research papers, and study resources.</p>
+          <div class="footer-socials">
+            <a href="#" class="footer-social-link" aria-label="Twitter">𝕏</a>
+            <a href="#" class="footer-social-link" aria-label="Facebook">f</a>
+            <a href="#" class="footer-social-link" aria-label="LinkedIn">in</a>
+          </div>
+        </div>
+        <div class="footer-col-links">
+          <h4 class="footer-title">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="books.html">Browse Books</a></li>
+            <li><a href="gallery.html">Gallery Spaces</a></li>
+            <li><a href="contact.html">Contact Support</a></li>
+          </ul>
+        </div>
+        <div class="footer-col-hours">
+          <h4 class="footer-title">Working Hours</h4>
+          <ul class="footer-links" style="color: rgba(248,250,252,0.65); font-size: 0.9rem;">
+            <li style="margin-bottom: 8px;">Mon - Fri: 8:00 AM - 8:00 PM</li>
+            <li style="margin-bottom: 8px;">Saturday: 9:00 AM - 5:00 PM</li>
+            <li style="margin-bottom: 8px;">Sunday: Closed</li>
+          </ul>
+        </div>
+        <div class="footer-col-contact">
+          <h4 class="footer-title">Contact Info</h4>
+          <ul class="footer-contact">
+            <li><span class="footer-contact-icon">📍</span>Central library Chitkara</li>
+            <li><span class="footer-contact-icon">📞</span>9876543214</li>
+            <li><span class="footer-contact-icon">✉️</span> support@booknest.gmail.com</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 BookNest Library System. All Rights Reserved. Course Academic Project.</p>
+        <a href="#" class="nav-link" style="font-size: 0.85rem;">Privacy Policy</a>
+      </div>
+    </div>
+  </footer>
+
+  <button class="back-to-top" aria-label="Scroll back to top">↑</button>
+
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/dashboard.js"></script>
+</body>
+</html>

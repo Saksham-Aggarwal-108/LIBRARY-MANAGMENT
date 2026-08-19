@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home | BookNest Library Management System</title>
+  <meta name="description"
+    content="Welcome to BookNest, a modern, library management system containing thousands of books, research papers, and study resources.">
+  <link rel="icon" type="image/png" href="assets/images/logo/favicon.png">
+  <link rel="stylesheet" href="assets/css/variables.css">
+  <link rel="stylesheet" href="assets/css/animations.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/responsive.css">
+
+  <script>
+    (function () {
+      const theme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark-mode');
+      }
+    })();  
+  </script>
+</head>
+
+<body>
+  <header class="home-header">
+    <div class="container navbar-container">
+      <a href="index.html" class="logo-link">
+        <img src="assets/images/logo/logo.png" alt="BookNest Logo" class="logo-img">
+        <span class="logo-text">Book<span>Nest</span></span>
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav class="nav-menu">
+        <a href="index.html" class="nav-link active">Home</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="books.html" class="nav-link">Books</a>
+        <a href="gallery.html" class="nav-link">Gallery</a>
+        <a href="contact.html" class="nav-link">Contact</a>
+        <span class="nav-auth-btns guest-only">
+          <a href="login.html" class="nav-link">Login</a>
+          <a href="register.html" class="btn btn-primary btn-sm">Register</a>
+        </span>
+        <span class="nav-auth-btns user-only" style="display: none;">
+          <span id="user-welcome-text"
+            style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500; white-space: nowrap; margin-right: 10px;"></span>
+          <a href="user-dashboard.html" class="nav-link" style="margin-right: 10px;">Dashboard</a>
+          <a href="#" id="logout-btn" class="btn btn-secondary btn-sm">Logout</a>
+        </span>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">
+          <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+  <main>
+
+    <section class="hero-sec">
+      <div class="container hero-content anim-slide-up">
+        <span class="hero-subtitle">Knowledge Awaits You</span>
+        <h1 class="hero-title">Your Portal to Infinite Discovery</h1>
+        <p class="hero-desc">Access thousands of classical books, contemporary technology tutorials, scientific
+          journals, and historic archives in a unified premium learning space.</p>
+
+        <form class="hero-search" action="books.html" method="GET">
+          <input type="text" name="search" placeholder="Search by title, author, or ISBN..."
+            aria-label="Search catalog">
+          <button type="submit" class="btn btn-primary">Find Book</button>
+        </form>
+        <div class="hero-quick-stats">
+          <div class="quick-stat-card">
+            <h3>45k+</h3>
+            <p>Digital & Physical Books</p>
+          </div>
+          <div class="quick-stat-card">
+            <h3>12k+</h3>
+            <p>Active Students & Readers</p>
+          </div>
+          <div class="quick-stat-card">
+            <h3>150+</h3>
+            <p>Daily Research Citations</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-title-wrap scroll-reveal">
+          <h2 class="section-title">Featured Categories</h2>
+          <p class="section-subtitle">Dive into curated archives spanning various literary and scientific fields.</p>
+        </div>
+        <div class="categories-grid">
+
+          <a href="books.html?category=Science" class="category-card scroll-reveal">
+            <div class="category-icon-wrapper">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-color);">
+                <path
+                  d="M6.13 21.66a9 9 0 0 1-1.45-8.39 9 9 0 0 1 12.98-5.32 9 9 0 0 1 1.45 8.39 9 9 0 0 1-12.98 5.32z">
+                </path>
+                <path d="M8 12a4 4 0 0 1 .65-2.22 4 4 0 0 1 5.7.32 4 4 0 0 1-.65 2.22 4 4 0 0 1-5.7-.32z"></path>
+                <path d="M12 2v2"></path>
+                <path d="M12 20v2"></path>
+                <path d="M20 12h2"></path>
+                <path d="M2 12h2"></path>
+              </svg>
+            </div>
+            <h3 class="category-title">Science</h3>
+            <p class="category-desc">Explore space physics, astrophysics, organic chemistry, molecular genetics, and
+              quantum mechanics.</p>
+          </a>
+
+          <a href="books.html?category=Technology" class="category-card scroll-reveal">
+            <div class="category-icon-wrapper">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-color);">
+                <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                <line x1="20" y1="6" x2="20.01" y2="6"></line>
+                <line x1="20" y1="18" x2="20.01" y2="18"></line>
+              </svg>
+            </div>
+            <h3 class="category-title">Technology</h3>
+            <p class="category-desc">Modern coding tutorials, software systems design guides, database tuning, and AI
+              documentation.</p>
+          </a>
+
+          <a href="books.html?category=Literature" class="category-card scroll-reveal">
+            <div class="category-icon-wrapper">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-color);">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+              </svg>
+            </div>
+            <h3 class="category-title">Literature</h3>
+            <p class="category-desc">Classic prose, poetry archives, screenplays, dramatic theatre texts, and critical
+              literary evaluations.</p>
+          </a>
+
+          <a href="books.html?category=History" class="category-card scroll-reveal">
+            <div class="category-icon-wrapper">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-color);">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
+            <h3 class="category-title">History</h3>
+            <p class="category-desc">Detailed historic logs, ancient archeological surveys, modern geopolitics, and
+              global war summaries.</p>
+          </a>
+
+          <a href="books.html?category=Business" class="category-card scroll-reveal">
+            <div class="category-icon-wrapper">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-color);">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+              </svg>
+            </div>
+            <h3 class="category-title">Business</h3>
+            <p class="category-desc">Corporate strategies, financial accounting frameworks, microeconomics, and startup
+              methodologies.</p>
+          </a>
+
+          <a href="books.html?category=Novels" class="category-card scroll-reveal">
+            <div class="category-icon-wrapper">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-color);">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
+            </div>
+            <h3 class="category-title">Novels</h3>
+            <p class="category-desc">Captivating fiction works, mystery thrillers, romance dramas, and imaginative high
+              fantasy lore.</p>
+          </a>
+
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="background-color: var(--bg-secondary);">
+      <div class="container">
+        <div class="section-title-wrap scroll-reveal">
+          <h2 class="section-title">Why Choose Our Library?</h2>
+          <p class="section-subtitle">Discover the premium services and infrastructure configured for academic
+            excellence.</p>
+        </div>
+        <div class="features-grid">
+
+          <div class="feature-card scroll-reveal">
+            <div class="feature-icon-box">📚</div>
+            <div class="feature-card-content">
+              <h3>Large Collection</h3>
+              <p>Explore over 45,000 physical volumes and digital catalogs updated weekly across all scientific and
+                artistic streams.</p>
+            </div>
+          </div>
+
+          <div class="feature-card scroll-reveal">
+            <div class="feature-icon-box">💻</div>
+            <div class="feature-card-content">
+              <h3>Digital Resources</h3>
+              <p>24/7 access to IEEE Xplore, JSTOR archives, research databases, and thousands of interactive PDF study
+                resources.</p>
+            </div>
+          </div>
+
+          <div class="feature-card scroll-reveal">
+            <div class="feature-icon-box">🏛️</div>
+            <div class="feature-card-content">
+              <h3>Comfortable Study Spaces</h3>
+              <p>Enjoy noise-controlled study cubicles, shared brainstorming hubs, whiteboards, and ergonomic lounge
+                furniture.</p>
+            </div>
+          </div>
+
+          <div class="feature-card scroll-reveal">
+            <div class="feature-icon-box">🧑💼</div>
+            <div class="feature-card-content">
+              <h3>Experienced Librarians</h3>
+              <p>Get cataloging support and academic reference assistance from our professional library research guides.
+              </p>
+            </div>
+          </div>
+
+          <div class="feature-card scroll-reveal">
+            <div class="feature-icon-box">⚡</div>
+            <div class="feature-card-content">
+              <h3>Fast Book Search</h3>
+              <p>Query titles in real-time, inspect virtual inventory, and locate exact coordinates on bookshelves
+                immediately.</p>
+            </div>
+          </div>
+
+          <div class="feature-card scroll-reveal">
+            <div class="feature-icon-box">🌐</div>
+            <div class="feature-card-content">
+              <h3>Online Services</h3>
+              <p>Reserve books, renew borrowings, request document deliveries, and review historical logs from your
+                dashboard.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <section class="stats-section">
+      <div class="container">
+        <div class="stats-counter-grid">
+
+          <div class="counter-card scroll-reveal">
+            <div class="counter-number" data-target="45" data-suffix="k+">0</div>
+            <div class="counter-label">Digital & Physical Books</div>
+          </div>
+
+          <div class="counter-card scroll-reveal">
+            <div class="counter-number" data-target="12" data-suffix="k+">0</div>
+            <div class="counter-label">Active Readers</div>
+          </div>
+
+          <div class="counter-card scroll-reveal">
+            <div class="counter-number" data-target="2.5" data-float="true" data-suffix="k+">0</div>
+            <div class="counter-label">Registered Authors</div>
+          </div>
+
+          <div class="counter-card scroll-reveal">
+            <div class="counter-number" data-target="850" data-suffix="+">0</div>
+            <div class="counter-label">Daily Study Visitors</div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="background-color: var(--bg-secondary);">
+      <div class="container">
+        <div class="section-title-wrap scroll-reveal">
+          <h2 class="section-title">Featured Collections</h2>
+          <p class="section-subtitle">Examine the highest rated and most heavily referenced academic volumes.</p>
+        </div>
+        <div class="featured-books-grid">
+
+          <article class="premium-book-card scroll-reveal">
+            <div class="book-card-img-container">
+              <img src="assets/images/books/book1.jpg" alt="Book Cover - Good Girls Guide To Murder">
+              <a href="book-details.html?id=1" class="btn btn-primary btn-sm book-overlay-btn">View Details</a>
+            </div>
+            <div class="book-details-body">
+              <span class="book-category-tag">Fiction</span>
+              <h3 class="book-item-title">Good Girls Guide To Murder</h3>
+              <p class="book-item-author">by Holly Jackson</p>
+              <div class="book-info-footer">
+                <span class="badge badge-available">Available</span>
+                <span style="font-size: 0.9rem; color: var(--accent-color); font-weight: 600;">★ 4.8</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="premium-book-card scroll-reveal">
+            <div class="book-card-img-container">
+              <img src="assets/images/books/book2.jpg" alt="Book Cover - Merchant of Venice">
+              <a href="book-details.html?id=2" class="btn btn-primary btn-sm book-overlay-btn">View Details</a>
+            </div>
+            <div class="book-details-body">
+              <span class="book-category-tag">Fiction</span>
+              <h3 class="book-item-title">Merchant of Venice</h3>
+              <p class="book-item-author">by William Shakespeare</p>
+              <div class="book-info-footer">
+                <span class="badge badge-available">Available</span>
+                <span style="font-size: 0.9rem; color: var(--accent-color); font-weight: 600;">★ 4.9</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="premium-book-card scroll-reveal">
+            <div class="book-card-img-container">
+              <img src="assets/images/books/book3.jpg" alt="Book Cover - Ikigai">
+              <a href="book-details.html?id=3" class="btn btn-primary btn-sm book-overlay-btn">View Details</a>
+            </div>
+            <div class="book-details-body">
+              <span class="book-category-tag">Self Help</span>
+              <h3 class="book-item-title">Ikigai</h3>
+              <p class="book-item-author">by Héctor García & F. Miralles</p>
+              <div class="book-info-footer">
+                <span class="badge badge-unavailable">Out of Stock</span>
+                <span style="font-size: 0.9rem; color: var(--accent-color); font-weight: 600;">★ 4.5</span>
+              </div>
+            </div>
+          </article>
+
+        </div>
+
+        <div class="text-center" style="margin-top: var(--spacing-xl);">
+          <a href="books.html" class="btn btn-dark" style="box-shadow: none; color: var(--bg-white);">View Entire Catalog</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container" style="max-width: 900px;">
+        <div class="section-title-wrap scroll-reveal">
+          <h2 class="section-title">Latest Announcements</h2>
+          <p class="section-subtitle">Stay informed on upcoming events, academic reviews, and system operations.</p>
+        </div>
+
+        <div class="announcements-board scroll-reveal">
+
+          <div class="announcement-item">
+            <div class="announcement-date">AUG 09, 2026</div>
+            <div class="announcement-info">
+              <h4>Database Maintenance & Server Upgrade</h4>
+              <p>Scheduled database indexing will take place on Sunday from 2:00 AM to 5:00 AM. Online catalog searches
+                and student reservation dashboards will be temporarily offline during this period.</p>
+            </div>
+          </div>
+
+          <div class="announcement-item">
+            <div class="announcement-date">JUL 28, 2026</div>
+            <div class="announcement-info">
+              <h4>500+ New Scientific & Tech Volumes Integrated</h4>
+              <p>We have added hundreds of new digital and physical acquisitions to the Science and Technology archives.
+                Log in to explore fresh releases on molecular biology, neural architectures, and dynamic database
+                tuning.</p>
+            </div>
+          </div>
+
+          <div class="announcement-item">
+            <div class="announcement-date">JUL 15, 2026</div>
+            <div class="announcement-info">
+              <h4>August Book Club Discussion Event</h4>
+              <p>Join us in the Central Discussion Area on August 15th for an interactive discussion on Holly Jackson's
+                highly-rated mystery novel 'Good Girls Guide To Murder'. Free coffee and cupcakes will be
+                provided for members.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="background-color: var(--bg-secondary);">
+      <div class="container">
+        <div class="section-title-wrap scroll-reveal">
+          <h2 class="section-title">What Our Readers Say</h2>
+          <p class="section-subtitle">Hear reviews and insights directly from our library members.</p>
+        </div>
+        <div class="testimonials-grid">
+
+          <div class="testimonial-premium-card scroll-reveal">
+            <div class="rating-stars">★★★★★</div>
+            <p class="testimonial-text">"The reservation workflow is exceptionally fast. I check book availability
+              during class and pick up my copies minutes later from the front desk."</p>
+            <div class="testimonial-author-info">
+              <div class="testimonial-premium-avatar">JD</div>
+              <div>
+                <h4 class="testimonial-author-name">John Doe</h4>
+                <p class="testimonial-author-role">Undergraduate Student</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-premium-card scroll-reveal">
+            <div class="rating-stars">★★★★★</div>
+            <p class="testimonial-text">"An incredible collection. I discovered rare astrophysics journals and the
+              latest UI design publications that I couldn't find anywhere else."</p>
+            <div class="testimonial-author-info">
+              <div class="testimonial-premium-avatar">SA</div>
+              <div>
+                <h4 class="testimonial-author-name">Sarah Al-Mansoor</h4>
+                <p class="testimonial-author-role">Researcher / Author</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-premium-card scroll-reveal">
+            <div class="rating-stars">★★★★☆</div>
+            <p class="testimonial-text">"The reading halls are quiet, gorgeous, and the digitized indexing dashboard
+              works flawlessly. Recommended to fellow postgraduates."</p>
+            <div class="testimonial-author-info">
+              <div class="testimonial-premium-avatar">RP</div>
+              <div>
+                <h4 class="testimonial-author-name">Robert Patt</h4>
+                <p class="testimonial-author-role">PhD Candidate</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-title-wrap scroll-reveal">
+          <h2 class="section-title">Library Facilities</h2>
+          <p class="section-subtitle">A visual showcase of our premium physical spaces and modern digital rooms.</p>
+        </div>
+        <div class="facility-gallery-grid">
+
+          <div class="facility-card scroll-reveal">
+            <img src="assets/images/gallery/reading-room.jpg" alt="Reading Hall">
+            <div class="facility-card-overlay">
+              <h3>Reading Hall</h3>
+              <p>Oak desks, desk lamps, and quiet areas for individual study.</p>
+            </div>
+          </div>
+
+          <div class="facility-card scroll-reveal">
+            <img src="assets/images/gallery/digital-library.jpg" alt="Digital Library">
+            <div class="facility-card-overlay">
+              <h3>Digital Library</h3>
+              <p>High speed access to online databases and paper archives.</p>
+            </div>
+          </div>
+
+          <div class="facility-card scroll-reveal">
+            <img src="assets/images/gallery/computer-lab.jpg" alt="Computer Lab">
+            <div class="facility-card-overlay">
+              <h3>Computer Lab</h3>
+              <p>Modern workstations configured with academic engineering tools.</p>
+            </div>
+          </div>
+
+          <div class="facility-card scroll-reveal">
+            <img src="assets/images/gallery/discussion-room.jpg" alt="Discussion Rooms">
+            <div class="facility-card-overlay">
+              <h3>Discussion Rooms</h3>
+              <p>Soundproof spaces fitted with screens and writing boards.</p>
+            </div>
+          </div>
+
+          <div class="facility-card scroll-reveal">
+            <img src="assets/images/gallery/reference-section.jpg" alt="Reference Section">
+            <div class="facility-card-overlay">
+              <h3>Reference Section</h3>
+              <p>Archival room houses rare historic documents and old texts.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <section class="container scroll-reveal">
+      <div class="premium-cta-sec">
+        <div class="premium-cta-wrap">
+          <h2>Ready to Deep Dive?</h2>
+          <p>Register a student or community membership account today to unlock real-time book booking, reading history
+            tracking, and exclusive study-room reservations.</p>
+          <div class="cta-btns">
+            <a href="register.html" class="btn btn-primary">Join BookNest Now</a>
+            <a href="about.html" class="btn btn-secondary">Learn More</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="newsletter-wrapper scroll-reveal">
+          <h3 class="newsletter-title" style="color: var(--primary-color); margin-bottom: 8px;">Stay Updated</h3>
+          <p class="section-subtitle">Subscribe to our newsletter to receive updates on monthly reading events and new
+            book arrivals.</p>
+
+          <div class="newsletter-form-container">
+            <form class="newsletter-form" id="newsletter-form">
+              <div class="newsletter-input-group">
+                <input type="email" placeholder="Enter your email address" required
+                  aria-label="Newsletter email address">
+                <button type="submit" class="btn btn-primary">Subscribe</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col-brand">
+          <div class="footer-logo">Book<span>Nest</span></div>
+          <p class="footer-desc">A state-of-the-art educational sanctuary offering access to thousands of books,
+            research papers, and study resources.</p>
+          <div class="footer-socials">
+            <a href="#" class="footer-social-link" aria-label="Twitter">𝕏</a>
+            <a href="#" class="footer-social-link" aria-label="Facebook">f</a>
+            <a href="#" class="footer-social-link" aria-label="LinkedIn">in</a>
+          </div>
+        </div>
+        <div class="footer-col-links">
+          <h4 class="footer-title">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="books.html">Browse Books</a></li>
+            <li><a href="gallery.html">Gallery Spaces</a></li>
+            <li><a href="contact.html">Contact Support</a></li>
+          </ul>
+        </div>
+        <div class="footer-col-hours">
+          <h4 class="footer-title">Working Hours</h4>
+          <ul class="footer-links" style="color: rgba(248,250,252,0.65); font-size: 0.9rem;">
+            <li style="margin-bottom: 8px;">Mon - Fri: 8:00 AM - 8:00 PM</li>
+            <li style="margin-bottom: 8px;">Saturday: 9:00 AM - 5:00 PM</li>
+            <li style="margin-bottom: 8px;">Sunday: Closed</li>
+          </ul>
+        </div>
+        <div class="footer-col-contact">
+          <h4 class="footer-title">Contact Info</h4>
+          <ul class="footer-contact">
+            <li><span class="footer-contact-icon">📍</span>Central library Chitkara</li>
+            <li><span class="footer-contact-icon">📞</span>9876543214</li>
+            <li><span class="footer-contact-icon">✉️</span> support@booknest.gmail.com</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 BookNest Library System. All Rights Reserved. Course Academic Project.</p>
+        <a href="#" class="nav-link" style="font-size: 0.85rem;">Privacy Policy</a>
+      </div>
+    </div>
+  </footer>
+
+  <button class="back-to-top" aria-label="Scroll back to top">↑</button>
+
+  <script src="assets/js/main.js"></script>
+  <script>
+
+    const newsForm = document.getElementById('newsletter-form');
+    if (newsForm) {
+      newsForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (window.showCustomAlert) {
+          window.showCustomAlert('Subscription successful! Welcome to BookNest announcements.', 'success');
+        }
+        newsForm.reset();
+      });
+    }
+
+    const counters = document.querySelectorAll('.counter-number');
+    if (counters.length > 0) {
+      const countUp = (counter) => {
+        const target = parseFloat(counter.getAttribute('data-target'));
+        const suffix = counter.getAttribute('data-suffix') || '';
+        const isFloat = counter.getAttribute('data-float') === 'true';
+        let current = 0;
+        const duration = 1500;
+        const stepTime = 15;
+        const steps = duration / stepTime;
+        const increment = target / steps;
+
+        const timer = setInterval(() => {
+          current += increment;
+          if (current >= target) {
+            current = target;
+            clearInterval(timer);
+          }
+          counter.textContent = (isFloat ? current.toFixed(1) : Math.round(current)) + suffix;
+        }, stepTime);
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            countUp(entry.target);
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.5 });
+
+      counters.forEach(counter => observer.observe(counter));
+    }
+  </script>
+</body>
+
+</html>
