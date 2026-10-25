@@ -402,6 +402,112 @@
 }
 
 /* ==========================================================================
+   4B. CODE BLOCKS & MESSAGE ACTIONS
+   ========================================================================== */
+.chatbot-code-block {
+  margin: 10px 0;
+  border-radius: 8px;
+  background-color: #0f172a;
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+  font-family: 'Fira Code', Consolas, Monaco, monospace;
+  font-size: 0.82rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.chatbot-code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background-color: #1e293b;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.72rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.chatbot-copy-code-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #e2e8f0;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chatbot-copy-code-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.chatbot-code-block pre {
+  margin: 0;
+  padding: 12px 14px;
+  overflow-x: auto;
+  line-height: 1.5;
+  color: #f8fafc;
+  font-family: inherit;
+}
+
+.chatbot-code-block code {
+  font-family: inherit;
+  color: inherit;
+}
+
+.chatbot-inline-code {
+  background: rgba(217, 119, 6, 0.12);
+  color: var(--accent-hover);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Fira Code', Consolas, Monaco, monospace;
+  font-size: 0.85em;
+  border: 1px solid rgba(217, 119, 6, 0.2);
+}
+
+html.dark-mode .chatbot-inline-code {
+  background: rgba(217, 119, 6, 0.25);
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.chatbot-bubble-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding-top: 5px;
+  border-top: 1px dashed rgba(148, 163, 184, 0.25);
+}
+
+.chatbot-copy-bubble-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.72rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all var(--transition-fast);
+}
+
+.chatbot-copy-bubble-btn:hover {
+  color: var(--accent-color);
+  background-color: rgba(217, 119, 6, 0.08);
+}
+
+/* ==========================================================================
    5. INTERACTIVE BOOK RECOMMENDATION CARDS
    ========================================================================== */
 .chatbot-books-grid {
