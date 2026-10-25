@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="assets/css/animations.css">
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/responsive.css">
+  <link rel="stylesheet" href="assets/css/chatbot.css">
   
   <script>
     (function() {
@@ -116,7 +117,7 @@
           </div>
           
           <div style="margin-top: var(--spacing-md);">
-            <button type="button" class="btn btn-secondary btn-sm" style="width: 100%;" onclick="window.location.search = '';">Clear All Filters</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="clear-filters-btn" style="width: 100%;">Clear All Filters</button>
           </div>
         </aside>
 
@@ -125,7 +126,7 @@
           <div class="catalog-controls scroll-reveal">
             <div class="catalog-search-bar">
               <input type="text" id="catalog-search-input" placeholder="Search by title, author, or ISBN..." aria-label="Search catalog text">
-              <button type="button" aria-label="Search button">🔍</button>
+              <button type="button" id="catalog-search-btn" aria-label="Search button">🔍</button>
             </div>
             
             <div class="catalog-sorting">
@@ -203,7 +204,11 @@
 
   <button class="back-to-top" aria-label="Scroll back to top">↑</button>
 
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
   <script src="assets/js/main.js"></script>
   <script src="assets/js/books.js"></script>
+  <script src="assets/js/chatbot-api.js"></script>
+  <script src="assets/js/chatbot.js"></script>
 </body>
 </html>

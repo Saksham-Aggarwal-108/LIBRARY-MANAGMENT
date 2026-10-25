@@ -1,12 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BookNest Loading...</title>
   <link rel="icon" type="image/png" href="assets/images/logo/favicon.png">
-
   <script>
     (function () {
       const theme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -17,7 +15,6 @@
   </script>
 
   <style>
-    
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
 
     :root {
@@ -119,9 +116,7 @@
       box-shadow: 0 0 10px rgba(217, 119, 6, 0.4);
       transition: width 0.05s linear;
     }
-
     @keyframes pulseLogo {
-
       0%,
       100% {
         transform: scale(1);
@@ -133,10 +128,8 @@
         opacity: 1;
         filter: drop-shadow(0 0 8px rgba(217, 119, 6, 0.35));
       }
-    }
-
+    } 
     @keyframes pulseSubtitle {
-
       0%,
       100% {
         opacity: 0.6;
@@ -154,11 +147,11 @@
   <div class="preloader-content">
     <img src="assets/images/logo/logo.png" alt="BookNest Logo" class="preloader-logo-img">
     <h1 class="preloader-title">Book<span>Nest</span></h1>
-    
+
     <div class="progress-container">
       <div class="progress-bar" id="progress-bar"></div>
     </div>
-    
+
     <p class="preloader-subtitle"><span id="progress-percent">0%</span> • Entering your sanctuary...</p>
   </div>
 
@@ -167,19 +160,19 @@
     window.addEventListener('load', () => {
       const progressBar = document.getElementById('progress-bar');
       const progressPercent = document.getElementById('progress-percent');
-      
+
       let width = 0;
       const duration = 2200;
       const interval = 20;
       const totalSteps = duration / interval;
       const step = 100 / totalSteps;
-      
+
       const timer = setInterval(() => {
         width += step;
         if (width >= 100) {
           width = 100;
           clearInterval(timer);
-          
+
           setTimeout(() => {
             document.body.classList.add('fade-out');
             setTimeout(() => {
@@ -187,7 +180,7 @@
             }, 500);
           }, 300);
         }
-        
+
         progressBar.style.width = width + '%';
         progressPercent.textContent = Math.round(width) + '%';
       }, interval);

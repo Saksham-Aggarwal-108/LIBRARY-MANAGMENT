@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="assets/css/animations.css">
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/responsive.css">
+  <link rel="stylesheet" href="assets/css/chatbot.css">
   
   <script>
     (function() {
@@ -91,6 +92,14 @@
             </div>
           </div>
 
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-md); font-size: 0.85rem;">
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; color: var(--text-muted);">
+              <input type="checkbox" id="login-remember">
+              <span>Remember session</span>
+            </label>
+            <a href="#forgot-password" id="forgot-password-link" style="color: var(--accent-color); font-weight: 500;">Forgot Password?</a>
+          </div>
+
           <div style="background-color: var(--accent-light); padding: var(--spacing-sm) var(--spacing-md); border-radius: var(--radius-sm); font-size: 0.8rem; color: var(--accent-hover); margin-bottom: var(--spacing-md); border-left: 3px solid var(--accent-color);">
             💡 <strong>Quick Test Credentials:</strong><br>
             Username: <code>student</code> &nbsp;|&nbsp; Password: <code>student123</code>
@@ -155,7 +164,11 @@
 
   <button class="back-to-top" aria-label="Scroll back to top">↑</button>
 
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
   <script src="assets/js/main.js"></script>
   <script src="assets/js/validation.js"></script>
+  <script src="assets/js/chatbot-api.js"></script>
+  <script src="assets/js/chatbot.js"></script>
 </body>
 </html>

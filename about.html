@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,22 +7,20 @@
   <meta name="description"
     content="Discover the mission, vision, services, objectives, and state-of-the-art facilities available at BookNest library.">
   <link rel="icon" type="image/png" href="assets/images/logo/favicon.png">
-
   <link rel="stylesheet" href="assets/css/variables.css">
   <link rel="stylesheet" href="assets/css/animations.css">
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/responsive.css">
-
+  <link rel="stylesheet" href="assets/css/chatbot.css">
   <script>
     (function () {
       const theme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
       if (theme === 'dark') {
         document.documentElement.classList.add('dark-mode');
       }
-    })();
+    })(); 
   </script>
 </head>
-
 <body>
   <header>
     <div class="container navbar-container">
@@ -73,9 +70,7 @@
       </nav>
     </div>
   </header>
-
   <div class="header-spacer"></div>
-
   <nav class="breadcrumb-wrap" aria-label="Breadcrumb">
     <div class="container">
       <ol class="breadcrumb-list">
@@ -85,9 +80,7 @@
       </ol>
     </div>
   </nav>
-
   <main>
-
     <section class="section">
       <div class="container">
         <div class="about-grid">
@@ -142,14 +135,12 @@
         </div>
       </div>
     </section>
-
     <section class="section" style="background-color: var(--bg-secondary);">
       <div class="container">
         <div class="section-title-wrap scroll-reveal">
           <h2 class="section-title">Our Premium Facilities</h2>
           <p class="section-subtitle">BookNest offers a spectrum of physical study zones and academic utilities.</p>
         </div>
-
         <div class="facilities-grid">
           <div class="facility-card scroll-reveal">
             <h4>🤫 Silent Zones</h4>
@@ -170,14 +161,12 @@
         </div>
       </div>
     </section>
-
     <section class="section">
       <div class="container">
         <div class="about-grid" style="grid-template-columns: 1fr 1.2fr;">
           <div class="about-img-wrap scroll-reveal" style="box-shadow: none;">
             <img src="assets/images/books/book6.jpg" alt="A student researching in front of book bookshelves">
           </div>
-
           <div class="about-content scroll-reveal">
             <h2>Our Strategic Objectives</h2>
             <p class="about-p">To remain a top-tier learning partner, BookNest works continuously to achieve core
@@ -206,9 +195,7 @@
         </div>
       </div>
     </section>
-
-  </main>
-
+</main>
   <footer>
     <div class="container">
       <div class="footer-grid">
@@ -255,10 +242,11 @@
       </div>
     </div>
   </footer>
-
   <button class="back-to-top" aria-label="Scroll back to top">↑</button>
-
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
   <script src="assets/js/main.js"></script>
+  <script src="assets/js/chatbot-api.js"></script>
+  <script src="assets/js/chatbot.js"></script>
 </body>
-
 </html>

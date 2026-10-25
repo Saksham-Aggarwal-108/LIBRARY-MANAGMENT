@@ -1,0 +1,50 @@
+[
+  {
+    "id": "brw_1",
+    "userId": "usr_student_01",
+    "username": "student",
+    "bookId": 2,
+    "bookTitle": "Merchant of Venice",
+    "bookAuthor": "William Shakespeare",
+    "issueDate": "2026-07-15",
+    "dueDate": "2026-07-29",
+    "returnDate": null,
+    "status": "Issued"
+  },
+  {
+    "id": "brw_2",
+    "userId": "usr_student_01",
+    "username": "student",
+    "bookId": 1,
+    "bookTitle": "Good Girls Guide To Murder",
+    "bookAuthor": "Holly Jackson",
+    "issueDate": "2026-07-01",
+    "dueDate": "2026-07-15",
+    "returnDate": "2026-07-14",
+    "status": "Returned"
+  },
+  {
+    "id": "brw_3",
+    "userId": "usr_student_01",
+    "username": "student",
+    "bookId": 3,
+    "bookTitle": "Ikigai",
+    "bookAuthor": "Héctor García and Francesc Miralles",
+    "issueDate": "2026-07-02",
+    "dueDate": "2026-07-16",
+    "returnDate": null,
+    "status": "Issued"
+  },
+  {
+    "id": "brw_4",
+    "userId": "usr_student_01",
+    "username": "student",
+    "bookId": 5,
+    "bookTitle": "Wings of Fire",
+    "bookAuthor": "A. P. J. Abdul Kalam",
+    "issueDate": "2026-05-10",
+    "dueDate": "2026-05-24",
+    "returnDate": "2026-05-22",
+    "status": "Returned"
+  }
+]
