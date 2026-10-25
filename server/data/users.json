@@ -1,0 +1,20 @@
+[
+  {
+    "id": "usr_student_01",
+    "name": "Jane Student",
+    "username": "student",
+    "email": "student@library.com",
+    "passwordHash": "175ac8d8e83ffd38e95ea240d6f96dac:51c41e4cc605ff772754d87f709789c86ee5f23274be4a1def14fae28736a44fc0656bced59ce4f9b4292e826075e029352ca77162e537e52e9375f9641581fc",
+    "cardId": "BN-98234-2026",
+    "createdAt": "2026-10-25T04:27:53.320Z"
+  },
+  {
+    "id": "usr_librarian_01",
+    "name": "Librarian Admin",
+    "username": "librarian",
+    "email": "admin@library.com",
+    "passwordHash": "a828ad476a9d1c20a3106c1b0124069c:c33840b162ac175b0829121374a006df081eb60920b9772d6e909afa3baf1b4f269229f54c7d19a36c4e657604795b7a604fa9709f9b5fb926c3cc8cdfe7628a",
+    "cardId": "BN-10001-2026",
+    "createdAt": "2026-10-25T04:27:53.366Z"
+  }
+]

@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="assets/css/animations.css">
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/responsive.css">
+  <link rel="stylesheet" href="assets/css/chatbot.css">
 
   <script>
     (function () {
@@ -592,20 +593,12 @@
 
   <button class="back-to-top" aria-label="Scroll back to top">↑</button>
 
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
   <script src="assets/js/main.js"></script>
+  <script src="assets/js/chatbot-api.js"></script>
+  <script src="assets/js/chatbot.js"></script>
   <script>
-
-    const newsForm = document.getElementById('newsletter-form');
-    if (newsForm) {
-      newsForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        if (window.showCustomAlert) {
-          window.showCustomAlert('Subscription successful! Welcome to BookNest announcements.', 'success');
-        }
-        newsForm.reset();
-      });
-    }
-
     const counters = document.querySelectorAll('.counter-number');
     if (counters.length > 0) {
       const countUp = (counter) => {

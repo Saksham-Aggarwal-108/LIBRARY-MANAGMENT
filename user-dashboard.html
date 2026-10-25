@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="assets/css/animations.css">
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/responsive.css">
+  <link rel="stylesheet" href="assets/css/chatbot.css">
   
   <script>
     (function() {
@@ -92,6 +93,16 @@
               </a>
             </li>
             <li>
+              <a href="#" class="dashboard-tab-btn" data-panel="dashboard-reserved">
+                <span>🔖</span> Reserved Books
+              </a>
+            </li>
+            <li>
+              <a href="#" class="dashboard-tab-btn" data-panel="dashboard-history">
+                <span>📜</span> Borrowing History
+              </a>
+            </li>
+            <li>
               <a href="#" class="dashboard-tab-btn" data-panel="dashboard-profile">
                 <span>👤</span> Profile Information
               </a>
@@ -115,18 +126,25 @@
             <h2>Welcome Back, <span id="overview-welcome-name">Jane Student</span></h2>
             <p style="color: var(--text-muted); margin-bottom: var(--spacing-lg);">Access your BookNest library borrowing logs, active cards, and due schedules.</p>
             
-            <div class="dashboard-stats-grid">
+            <div class="dashboard-stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
               <div class="dashboard-stat-card">
                 <span class="stat-icon">📖</span>
                 <div>
-                  <h4 id="stat-issued-count">2</h4>
-                  <p>Books Currently Issued</p>
+                  <h4 id="stat-issued-count">0</h4>
+                  <p>Currently Issued</p>
+                </div>
+              </div>
+              <div class="dashboard-stat-card">
+                <span class="stat-icon" style="background-color: var(--accent-light); color: var(--accent-hover);">🔖</span>
+                <div>
+                  <h4 id="stat-reserved-count">0</h4>
+                  <p>Active Reserved</p>
                 </div>
               </div>
               <div class="dashboard-stat-card">
                 <span class="stat-icon" style="background-color: #d1fae5; color: var(--secondary-color);">✓</span>
                 <div>
-                  <h4 id="stat-returned-count">2</h4>
+                  <h4 id="stat-returned-count">0</h4>
                   <p>Returned History</p>
                 </div>
               </div>
@@ -140,18 +158,19 @@
             </div>
 
             <div style="background-color: var(--bg-white); padding: var(--spacing-xl); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); margin-top: var(--spacing-lg);">
-              <h3 style="margin-bottom: var(--spacing-sm);">Important Announcements</h3>
+              <h3 style="margin-bottom: var(--spacing-sm);">Important Library Notices</h3>
               <ul class="footer-links" style="display: flex; flex-direction: column; gap: var(--spacing-sm);">
                 <li style="display: flex; gap: 10px; color: var(--text-muted); font-size: 0.95rem;">
-                  <span style="color: var(--accent-color);">▶</span> BookNest reading week begins on May 10th. Extended opening hours (until 10 PM).
+                  <span style="color: var(--accent-color);">▶</span> Standard borrowing duration is 14 days per volume with real-time renewal eligibility.
                 </li>
                 <li style="display: flex; gap: 10px; color: var(--text-muted); font-size: 0.95rem;">
-                  <span style="color: var(--accent-color);">▶</span> The computer science textbook collection has been expanded on floor 3.
+                  <span style="color: var(--accent-color);">▶</span> Reserved books are held at the central circulation desk for 48 hours before release.
                 </li>
               </ul>
             </div>
           </div>
 
+          <!-- Issued Books Panel -->
           <div id="panel-dashboard-issued" class="dashboard-panel">
             <h2 style="margin-bottom: var(--spacing-md);">Your Issued Books</h2>
             
@@ -164,13 +183,62 @@
                       <th>Author</th>
                       <th>Issue Date</th>
                       <th>Due Date</th>
-                      <th>Return Date</th>
                       <th>Status</th>
                       <th>Days Left</th>
+                      <th>Action</th>
                     </tr>
                   </thead>
                   <tbody id="issued-books-tbody">
-                    
+                    <tr><td colspan="7" style="text-align: center; padding: 20px;">Loading issued books...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reserved Books Panel -->
+          <div id="panel-dashboard-reserved" class="dashboard-panel">
+            <h2 style="margin-bottom: var(--spacing-md);">Active Book Reservations</h2>
+            
+            <div class="form-card" style="padding: var(--spacing-md); overflow-hidden: auto;">
+              <div style="overflow-x: auto;">
+                <table class="issued-books-table">
+                  <thead>
+                    <tr>
+                      <th>Book Name</th>
+                      <th>Author</th>
+                      <th>Reservation Date</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="reserved-books-tbody">
+                    <tr><td colspan="5" style="text-align: center; padding: 20px;">Loading reservations...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Borrowing History Panel -->
+          <div id="panel-dashboard-history" class="dashboard-panel">
+            <h2 style="margin-bottom: var(--spacing-md);">Borrowing History</h2>
+            
+            <div class="form-card" style="padding: var(--spacing-md); overflow-hidden: auto;">
+              <div style="overflow-x: auto;">
+                <table class="issued-books-table">
+                  <thead>
+                    <tr>
+                      <th>Book Name</th>
+                      <th>Author</th>
+                      <th>Issue Date</th>
+                      <th>Due Date</th>
+                      <th>Return Date</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="history-books-tbody">
+                    <tr><td colspan="6" style="text-align: center; padding: 20px;">Loading history...</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -296,7 +364,11 @@
 
   <button class="back-to-top" aria-label="Scroll back to top">↑</button>
 
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
   <script src="assets/js/main.js"></script>
   <script src="assets/js/dashboard.js"></script>
+  <script src="assets/js/chatbot-api.js"></script>
+  <script src="assets/js/chatbot.js"></script>
 </body>
 </html>
