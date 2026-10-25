@@ -59,7 +59,7 @@ async function runBrowserAudit() {
     record('Chatbot Window Opens on FAB Click', isWindowActive);
 
     const titleText = await page.$eval('#chatbot-title', el => el.textContent.trim());
-    record('Chatbot Title is "Kaira"', titleText === 'Kaira', `Found: "${titleText}"`);
+    record('Chatbot Title is "Kiara" or "Kaira"', titleText === 'Kiara' || titleText === 'Kaira', `Found: "${titleText}"`);
 
     const subtitleText = await page.$eval('.chatbot-subtitle', el => el.textContent.trim());
     record('Chatbot Subtitle is "Your Smart Library Companion"', subtitleText.includes('Library Companion'), `Found: "${subtitleText}"`);

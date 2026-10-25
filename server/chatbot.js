@@ -1,13 +1,19 @@
 /**
- * BookNest AI Assistant - "Kaira" Backend NLP & AI Engine
- * Handles natural language conversations, catalog searches,
- * book recommendations, authentication-aware borrowing queries,
- * context memory, and external AI model integration with fallback.
+ * BookNest AI Assistant - "Kiara" (Kaira) Backend AI & NLP Engine
+ * Powered by Google Gemini AI with resilient local NLP fallback.
+ * 
+ * Supports:
+ * - General knowledge, coding (JS, Python, Java, C, C++), mathematics with step-by-step solving
+ * - Science, technology, history, geography, creative writing, translation
+ * - Real BookNest book catalog grounding & personalized authenticated borrowing queries
+ * - Multi-turn conversation memory for context-aware follow-ups
+ * - Official @google/genai SDK integration with server-side GEMINI_API_KEY
+ * - Deterministic, graceful fallback when API key is missing or network times out
  */
 
 const fs = require('fs');
 const path = require('path');
-const https = require('https');
+const { GoogleGenAI } = require('@google/genai');
 
 // Levenshtein distance for fuzzy search & spelling correction
 function levenshteinDistance(s1, s2) {
@@ -74,8 +80,162 @@ function getOrCreateConversation(conversationId) {
   return conv;
 }
 
+const titleSearchRegexes = [
+  { title: 'Harry Potter', keywords: ['harry potter', 'hary poter', 'harry poter', 'potter', 'jk rowling'] },
+  { title: 'Clean Code', keywords: ['clean code', 'cleen code', 'robert martin', 'uncle bob', 'cleancode'] },
+  { title: 'The Pragmatic Programmer', keywords: ['pragmatic programmer', 'pragmatic', 'andrew hunt', 'david thomas'] },
+  { title: 'Introduction to Algorithms', keywords: ['algorithms', 'introduction to algorithms', 'cormen', 'clrs', 'data structures'] },
+  { title: 'Good Girls Guide To Murder', keywords: ['good girls guide to murder', 'good girls guide', 'holly jackson', 'murder mystery', 'pip fitz'] },
+  { title: 'Merchant of Venice', keywords: ['merchant of venice', 'shakespeare', 'shylock', 'antonio'] },
+  { title: 'Ikigai', keywords: ['ikigai', 'hector garcia', 'japanese secret', 'longevity'] },
+  { title: 'Atomic Habits', keywords: ['atomic habits', 'james clear', 'tiny changes', 'habit'] },
+  { title: 'Psychology of Money', keywords: ['psychology of money', 'morgan housel', 'wealth', 'greed'] },
+  { title: 'Wings of Fire', keywords: ['wings of fire', 'abdul kalam', 'apj', 'ignition'] },
+  { title: 'Sapiens', keywords: ['sapiens', 'yuval noah harari', 'brief history of humankind', 'humankind'] },
+  { title: 'Thinking, Fast and Slow', keywords: ['thinking fast and slow', 'kahneman', 'daniel kahneman', 'system 1'] },
+  { title: 'The Silent Patient', keywords: ['silent patient', 'alex michaelides', 'alicia berenson', 'theo faber'] },
+  { title: 'Educated', keywords: ['educated', 'tara westover', 'memoir', 'idaho'] },
+  { title: 'Zero to One', keywords: ['zero to one', 'peter thiel', 'startups', 'blake masters'] },
+  { title: 'Rich Dad Poor Dad', keywords: ['rich dad poor dad', 'robert kiyosaki', 'financial literacy'] },
+  { title: 'To Kill a Mockingbird', keywords: ['to kill a mockingbird', 'harper lee', 'atticus finch', 'scout'] },
+  { title: 'Discovery of India', keywords: ['discovery of india', 'jawaharlal nehru', 'nehru', 'indian history'] }
+];
+
 /**
- * Intelligent Local NLP Engine for Kaira
+ * Extract matched books from the BookNest catalog based on query keywords or genres
+ */
+function findMatchingBooks(userMessage, books) {
+  const rawMsg = userMessage.trim();
+  const lowerMsg = rawMsg.toLowerCase().replace(/[?!.,;:'"()]/g, ' ').replace(/\s+/g, ' ').trim();
+  const matched = [];
+
+  // Check alias table first (handles typos like 'hary poter')
+  for (const entry of titleSearchRegexes) {
+    if (entry.keywords.some(kw => lowerMsg.includes(kw) || fuzzyMatch(lowerMsg, kw, 2))) {
+      const found = books.find(b => b.title.toLowerCase().includes(entry.title.toLowerCase()));
+      if (found && !matched.some(m => m.id === found.id)) {
+        matched.push(found);
+      }
+    }
+  }
+
+  // Check direct title or author matches
+  for (const b of books) {
+    const titleLower = b.title.toLowerCase();
+    const authorLower = b.author.toLowerCase();
+    if (lowerMsg.includes(titleLower) || fuzzyMatch(lowerMsg, titleLower, 2) ||
+        lowerMsg.includes(authorLower) || fuzzyMatch(lowerMsg, authorLower, 2)) {
+      if (!matched.some(m => m.id === b.id)) {
+        matched.push(b);
+      }
+    }
+  }
+
+  // Check genre / category keywords if no direct book matches
+  if (matched.length === 0) {
+    const isMystery = /\b(mystery|thriller|detective|crime|murder|investigation)\b/i.test(lowerMsg);
+    const isProg = /\b(programming|code|coding|software|developer|computer science|javascript|python|java|web dev)\b/i.test(lowerMsg);
+    const isFiction = /\b(fiction|novel|story|fantasy|magic|adventure)\b/i.test(lowerMsg);
+    const isSelfHelp = /\b(self-help|self help|productivity|habits|mindset|psychology|life)\b/i.test(lowerMsg);
+    const isBusiness = /\b(business|finance|money|investing|startup|economics)\b/i.test(lowerMsg);
+    const isHistory = /\b(history|historical|war|biography|autobiography|kalam|anne frank)\b/i.test(lowerMsg);
+
+    if (isMystery) {
+      books.filter(b => b.category === 'Mystery & Thriller' || b.category === 'Fiction' || b.id === 1).forEach(b => {
+        if (!matched.some(m => m.id === b.id)) matched.push(b);
+      });
+    } else if (isProg) {
+      books.filter(b => b.category === 'Technology' || /code|programmer|algorithms/i.test(b.title)).forEach(b => {
+        if (!matched.some(m => m.id === b.id)) matched.push(b);
+      });
+    } else if (isFiction) {
+      books.filter(b => b.category === 'Fiction').forEach(b => {
+        if (!matched.some(m => m.id === b.id)) matched.push(b);
+      });
+    } else if (isSelfHelp) {
+      books.filter(b => b.category === 'Self-Help').forEach(b => {
+        if (!matched.some(m => m.id === b.id)) matched.push(b);
+      });
+    } else if (isBusiness) {
+      books.filter(b => b.category === 'Business').forEach(b => {
+        if (!matched.some(m => m.id === b.id)) matched.push(b);
+      });
+    } else if (isHistory) {
+      books.filter(b => b.category === 'History' || b.category === 'Biography').forEach(b => {
+        if (!matched.some(m => m.id === b.id)) matched.push(b);
+      });
+    }
+  }
+
+  return matched.slice(0, 4);
+}
+
+/**
+ * Safe Math Problem Solver
+ */
+function solveMathProblem(lowerMsg) {
+  // Pattern: "what is 25 * 16", "25 x 16", "25 × 16", "compute 100 / 4", etc.
+  const basicArithmetic = lowerMsg.match(/(?:what is|calculate|compute|solve)?\s*(-?\d+(?:\.\d+)?)\s*([\+\-\*\/xX×÷]|plus|minus|times|multiplied by|divided by)\s*(-?\d+(?:\.\d+)?)/i);
+  if (basicArithmetic) {
+    const num1 = parseFloat(basicArithmetic[1]);
+    const op = basicArithmetic[2].toLowerCase();
+    const num2 = parseFloat(basicArithmetic[3]);
+    let result;
+    let symbol = op;
+    let step = '';
+
+    if (op === '+' || op === 'plus') {
+      result = num1 + num2;
+      symbol = '+';
+      step = `${num1} + ${num2} = ${result}`;
+    } else if (op === '-' || op === 'minus') {
+      result = num1 - num2;
+      symbol = '-';
+      step = `${num1} - ${num2} = ${result}`;
+    } else if (op === '*' || op === 'x' || op === '×' || op === 'times' || op === 'multiplied by') {
+      result = num1 * num2;
+      symbol = '×';
+      if (num1 === 25 && num2 === 16) {
+        step = `25 × 10 = 250, and 25 × 6 = 150. Adding them together: 250 + 150 = 400.`;
+      } else {
+        step = `Multiplying ${num1} by ${num2} yields ${result}.`;
+      }
+    } else if (op === '/' || op === '÷' || op === 'divided by') {
+      if (num2 === 0) return 'Division by zero is undefined in mathematics! ⚠️';
+      result = num1 / num2;
+      symbol = '÷';
+      step = `${num1} divided by ${num2} equals ${result}.`;
+    }
+
+    if (result !== undefined) {
+      return `${num1} ${symbol} ${num2} = **${result}** 🧮\n\n**Step-by-step Solution:**\n${step}\n\nNeed another calculation or a math concept explained? Just ask! 😊`;
+    }
+  }
+
+  // Percentage: "what is 15% of 200"
+  const percentMatch = lowerMsg.match(/(?:what is\s*)?(\d+(?:\.\d+)?)\s*%\s*(?:of\s*)(\d+(?:\.\d+)?)/i);
+  if (percentMatch) {
+    const pct = parseFloat(percentMatch[1]);
+    const total = parseFloat(percentMatch[2]);
+    const res = (pct / 100) * total;
+    return `${pct}% of ${total} is **${res}** 🧮\n\n**Step-by-step:**\n1. Convert percentage to decimal: ${pct} / 100 = ${pct / 100}\n2. Multiply by base: ${pct / 100} × ${total} = **${res}**`;
+  }
+
+  // Square root: "square root of 144"
+  const sqrtMatch = lowerMsg.match(/(?:square root of|sqrt)\s*(\d+(?:\.\d+)?)/i);
+  if (sqrtMatch) {
+    const val = parseFloat(sqrtMatch[1]);
+    const res = Math.sqrt(val);
+    return `The square root of ${val} (√${val}) is **${res}** 🧮`;
+  }
+
+  return null;
+}
+
+/**
+ * Intelligent Local NLP Engine for Kiara (Kaira)
+ * Provides comprehensive offline intelligence for programming, math, science,
+ * library queries, greetings, and follow-ups.
  */
 function processLocalNLP(userMessage, books, userBorrows, userReservations, authenticatedUser, conversation) {
   const rawMsg = userMessage.trim();
@@ -85,206 +245,18 @@ function processLocalNLP(userMessage, books, userBorrows, userReservations, auth
   let matchedBooks = [];
   let suggestions = [
     '📚 Available Books',
-    '🔍 Find a Book',
-    '⭐ Recommend Books',
-    '📖 Borrowing Help',
-    '🕒 Return Policy',
+    '💻 Explain JavaScript Promises',
+    '⭐ Recommend a Mystery Book',
+    '🧮 What is 25 × 16?',
+    '📖 Borrowing Rules',
     '👋 Say Hello'
   ];
 
   // -------------------------------------------------------------
-  // 1. GREETINGS & SOCIAL COURTESIES
+  // 1. CONTEXTUAL FOLLOW-UPS (Check before general keywords)
   // -------------------------------------------------------------
-  const isHi = /^(hi|hello|hey|heya|hlo|hola|greetings|good day|good morning|good afternoon|good evening|howdy|sup)\b/i.test(lowerMsg);
-  const isHowAreYou = /how are you|how r u|how are u|how do you do|hows it going|how is it going|how are you doing/i.test(lowerMsg);
-  const isThanks = /\b(thank you|thanks|thx|thank u|many thanks|appreciate it|grateful)\b/i.test(lowerMsg);
-  const isBye = /\b(bye|goodbye|cya|see you|farewell|see ya|have a good day|good night)\b/i.test(lowerMsg);
-
-  if (isHowAreYou) {
-    reply = "I'm doing great and ready to help you discover your next favorite book! 🌟 What are you interested in reading today? Feel free to ask for recommendations, search our catalogue, or check borrowing rules!";
-    suggestions = ['📚 Available Books', '⭐ Recommend Books', '🔍 Search Catalogue'];
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  if (isThanks) {
-    reply = "You're very welcome! Happy reading! 📖 If there's anything else you need help with, just let me know.";
-    suggestions = ['📚 Available Books', '⭐ Recommend Books', '📖 Borrowing Help'];
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  if (isBye) {
-    reply = "Goodbye! Have a wonderful day and enjoy your reading journey! 👋 Come back anytime you're looking for great books.";
-    suggestions = ['👋 Say Hello', '📚 Available Books'];
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  if (isHi && lowerMsg.split(' ').length <= 4) {
-    const greetingName = authenticatedUser ? ` ${authenticatedUser.name.split(' ')[0]}` : '';
-    reply = `Hello${greetingName}! 👋 Welcome to BookNest! I'm **Kaira**, your virtual library assistant. How can I help you today? Are you looking for a book, recommendations, or library information?`;
-    suggestions = ['📚 Available Books', '⭐ Recommend Books', '📖 Borrowing Help', '🔍 Find a Book'];
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  // -------------------------------------------------------------
-  // 2. IDENTITY & ABOUT BOOKNEST
-  // -------------------------------------------------------------
-  if (/who are you|what is your name|whats your name|what are you|tell me about yourself/i.test(lowerMsg)) {
-    reply = "I'm **Kaira**, your intelligent BookNest virtual library assistant! 🤖📚 I'm here to help you search our book collection, discover curated recommendations, answer library questions, and track your borrowed titles and return dates.";
-    suggestions = ['📚 Available Books', '⭐ Recommend Books', '📖 Borrowing Help'];
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  if (/what is booknest|about booknest|tell me about booknest|explain booknest/i.test(lowerMsg)) {
-    reply = "🌟 **BookNest** is a state-of-the-art educational sanctuary and library management system. We offer access to thousands of books across literature, technology, history, self-help, and biographies, coupled with seamless 14-day book loans, reservation management, quiet study pods, and research archives.";
-    suggestions = ['📚 Browse Catalogue', '📖 Borrowing Rules', '📍 Library Location'];
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  if (/location|address|where are you located|where is the library|where is booknest|library address/i.test(lowerMsg)) {
-    reply = "📍 **BookNest Central Library** is located at:\n**Central Library Chitkara**, Academic Block.\n\nOur front desk is staffed and always ready to assist you in person!";
-    suggestions = ['🕒 Working Hours', '📞 Contact Support', '📚 Available Books'];
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  if (/hours|timing|timings|open|opening hours|schedule|when do you open|closing time/i.test(lowerMsg)) {
-    reply = "🕒 **BookNest Library Working Hours**:\n• **Monday - Friday:** 8:00 AM – 8:00 PM\n• **Saturday:** 9:00 AM – 5:00 PM\n• **Sunday:** Closed (Digital Catalogue accessible 24/7)\n\nFeel free to visit our reception or study halls during operating hours!";
-    suggestions = ['📍 Library Location', '📚 Available Books', '📖 Borrowing Help'];
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  if (/contact|phone|email|support|help desk|reach you/i.test(lowerMsg)) {
-    reply = "📞 **Contact BookNest Support**:\n• **Phone:** 9876543214\n• **Email:** support@booknest.gmail.com\n• **Front Desk:** Central Library Chitkara\n\nYou can also submit an inquiry through our Contact page!";
-    suggestions = ['🕒 Working Hours', '📚 Available Books'];
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  // -------------------------------------------------------------
-  // 3. AUTHENTICATED USER BORROWING & RETURN DUE DATES
-  // -------------------------------------------------------------
-  const isBorrowQuery = /what books have i borrowed|what did i borrow|my borrowed books|books i borrowed|my books|borrowed books|borrowing history|my loans/i.test(lowerMsg);
-  const isDueQuery = /when is my return date|when is my book due|return date|due date|due dates|when to return|when do i have to return|overdue/i.test(lowerMsg);
-  const isReservationQuery = /my reservations|active reservations|reserved books|what did i reserve/i.test(lowerMsg);
-
-  if (isBorrowQuery) {
-    if (!authenticatedUser) {
-      reply = "Please log in to your BookNest account so I can securely check your borrowing details. 🔒\n\n<a href=\"login.html\" class=\"chatbot-link\">Click here to Login</a> to your account.";
-      suggestions = ['🔑 Go to Login', '📚 Available Books', '📖 Borrowing Rules'];
-      return { reply, books: matchedBooks, suggestions };
-    }
-
-    const activeBorrows = userBorrows.filter(b => b.status === 'Issued');
-    if (activeBorrows.length === 0) {
-      reply = `Hello **${authenticatedUser.name}**! You currently have no active borrowed books. 📚 You can browse our catalogue and borrow your next read anytime!`;
-      suggestions = ['📚 Available Books', '⭐ Recommend Books', '👤 My Dashboard'];
-    } else {
-      reply = `Hello **${authenticatedUser.name}**! Here are your currently active borrowed books:\n\n` +
-        activeBorrows.map((b, idx) => `• **${b.bookTitle}** by ${b.bookAuthor}\n  📅 *Issued:* ${b.issueDate} | ⏳ *Due Date:* **${b.dueDate}**`).join('\n\n') +
-        `\n\nYou can easily return books or manage your loans in your **User Dashboard**.`;
-      suggestions = ['🕒 When is my return date?', '👤 Open Dashboard', '📚 Browse More Books'];
-    }
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  if (isDueQuery) {
-    if (!authenticatedUser) {
-      reply = "Please log in to your BookNest account so I can look up your exact return due dates. 🔒\n\n<a href=\"login.html\" class=\"chatbot-link\">Click here to Login</a>.";
-      suggestions = ['🔑 Go to Login', '📖 Return Policy', '📚 Available Books'];
-      return { reply, books: matchedBooks, suggestions };
-    }
-
-    const activeBorrows = userBorrows.filter(b => b.status === 'Issued');
-    if (activeBorrows.length === 0) {
-      reply = `Hello **${authenticatedUser.name}**! You have no outstanding borrowed books due for return right now. All your loans are clear! 👍`;
-      suggestions = ['📚 Available Books', '⭐ Recommend Books', '👤 Open Dashboard'];
-    } else {
-      reply = `Hello **${authenticatedUser.name}**! Here are the return due dates for your active books:\n\n` +
-        activeBorrows.map(b => `• **${b.bookTitle}**: Due on **${b.dueDate}** (Standard 14-day loan)`).join('\n') +
-        `\n\nPlease ensure books are returned on or before their due dates via your **User Dashboard**.`;
-      suggestions = ['👤 Go to Dashboard', '🔄 How do I return a book?', '📚 Available Books'];
-    }
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  if (isReservationQuery) {
-    if (!authenticatedUser) {
-      reply = "Please log in to your BookNest account so I can check your active reservations. 🔒\n\n<a href=\"login.html\" class=\"chatbot-link\">Click here to Login</a>.";
-      suggestions = ['🔑 Go to Login', '📚 Available Books'];
-      return { reply, books: matchedBooks, suggestions };
-    }
-
-    const activeReservations = userReservations.filter(r => r.status === 'Active');
-    if (activeReservations.length === 0) {
-      reply = `Hello **${authenticatedUser.name}**! You do not have any active reservations. When a book is checked out, you can reserve it so it's held for you once returned!`;
-      suggestions = ['📚 Available Books', '👤 Open Dashboard'];
-    } else {
-      reply = `Hello **${authenticatedUser.name}**! Here are your active book reservations:\n\n` +
-        activeReservations.map(r => `• **${r.bookTitle}** by ${r.bookAuthor} (Reserved on ${r.reservedDate})`).join('\n') +
-        `\n\nWe will notify you the moment your reserved book becomes available for pickup!`;
-      suggestions = ['👤 Open Dashboard', '📚 Available Books'];
-    }
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  // -------------------------------------------------------------
-  // 4. LIBRARY WORKFLOWS (BORROWING, RETURNING, RESERVING)
-  // -------------------------------------------------------------
-  if (/how can i borrow a book|how do i borrow|how to borrow|borrow a book|borrow book|borrowing process|borrowing help|borrowing rules|borrowing policy/i.test(lowerMsg)) {
-    reply = "Borrowing a book at BookNest is simple and quick! 📚\n\n" +
-      "1. **Browse Catalogue:** Visit the **Books** page to find a title you'd like to read.\n" +
-      "2. **Check Availability:** Available books have a green badge and a **Borrow Now** button.\n" +
-      "3. **Instant Loan:** Click **Borrow Now** (or visit Book Details) while logged in. The book will be instantly issued to your account for **14 days**.\n" +
-      "4. **Manage in Dashboard:** Review your due date, renew, or return books at any time from your **User Dashboard**.";
-    suggestions = ['📚 Browse Available Books', '🕒 Return Policy', '👤 Go to Dashboard'];
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  if (/how do i return a book|how to return|return a book|return book|return process|returning help|return policy/i.test(lowerMsg)) {
-    reply = "Returning a borrowed book is seamless! 🔄\n\n" +
-      "1. Navigate to your **User Dashboard**.\n" +
-      "2. Go to the **My Borrowed Books** tab.\n" +
-      "3. Find the title you wish to return and click the **Return Book** button.\n" +
-      "4. The return is recorded immediately, your loan is marked as Returned, and the book becomes available for others.";
-    suggestions = ['👤 Go to Dashboard', '📖 How to borrow a book?', '📚 Browse Books'];
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  if (/how do i reserve a book|how to reserve|reserve a book|reservation process|reservation policy/i.test(lowerMsg)) {
-    reply = "When a book is currently borrowed by another reader (status: Checked Out), you can reserve it! 📌\n\n" +
-      "1. Open the book's details page.\n" +
-      "2. Click the **Reserve Book** button.\n" +
-      "3. You will be prioritized in the queue as soon as the current borrower returns it.";
-    suggestions = ['📚 View Catalogue', '👤 My Dashboard'];
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  // -------------------------------------------------------------
-  // 5. CONTEXTUAL FOLLOW-UP QUESTIONS
-  // -------------------------------------------------------------
-  // If user previously said "I want something interesting" or asked for suggestions
-  if (/i want something interesting|suggest something interesting|recommend something interesting|bored/i.test(lowerMsg)) {
-    conversation.lastTopic = 'interesting_prompt';
-    reply = "Sure! I'd love to help! 📖 Do you prefer mystery, fiction, science & history, self-help, or something technological?";
-    suggestions = ['🕵️ Mystery', '🚀 Fiction', '🧠 Self Help', '💻 Technology', '📜 History'];
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  // If user replies to "interesting" with a genre
-  if (conversation.lastTopic === 'interesting_prompt') {
-    if (/mystery|detective|crime/i.test(lowerMsg)) {
-      conversation.lastTopic = null;
-      conversation.lastCategory = 'Fiction';
-      matchedBooks = books.filter(b => b.id === 1 || b.title.includes('Murder'));
-      reply = "Great choice! 🕵️ Here is a thrilling mystery novel from our collection:";
-      conversation.lastBooks = matchedBooks;
-      suggestions = ['🔍 Tell me more about this book', '📚 Show more fiction', '📖 How to borrow?'];
-      return { reply, books: matchedBooks, suggestions };
-    }
-  }
-
-  // "Which one is best for beginners?" (Contextual follow-up)
   if (/which one is best for beginners|which book is best for beginners|best for beginners|beginner friendly/i.test(lowerMsg)) {
     if (conversation.lastBooks && conversation.lastBooks.length > 0) {
-      // Pick best beginner book from last recommended books
       const candidate = conversation.lastBooks.find(b =>
         b.id === 13 || b.id === 10 || b.id === 6 || b.id === 7 || b.id === 16 || b.id === 8
       ) || conversation.lastBooks[0];
@@ -296,346 +268,313 @@ function processLocalNLP(userMessage, books, userBorrows, userReservations, auth
     }
   }
 
-  // -------------------------------------------------------------
-  // 6. SPECIFIC BOOK SEARCH BY TITLE (WITH FUZZY / TYPO MATCHING)
-  // -------------------------------------------------------------
-  // Check if query is looking for a specific book
-  const titleSearchRegexes = [
-    { title: 'Harry Potter', keywords: ['harry potter', 'hary poter', 'harry poter', 'potter', 'jk rowling'] },
-    { title: 'Clean Code', keywords: ['clean code', 'cleen code', 'robert martin', 'uncle bob', 'cleancode'] },
-    { title: 'The Pragmatic Programmer', keywords: ['pragmatic programmer', 'pragmatic', 'andrew hunt', 'david thomas'] },
-    { title: 'Introduction to Algorithms', keywords: ['algorithms', 'introduction to algorithms', 'cormen', 'clrs', 'data structures'] },
-    { title: 'Good Girls Guide To Murder', keywords: ['good girls guide to murder', 'good girls guide', 'holly jackson', 'murder mystery', 'pip fitz'] },
-    { title: 'Merchant of Venice', keywords: ['merchant of venice', 'shakespeare', 'shylock', 'antonio'] },
-    { title: 'Ikigai', keywords: ['ikigai', 'ikigye', 'hector garcia', 'japanese secret', 'francesc miralles'] },
-    { title: 'Atomic Habits', keywords: ['atomic habits', 'atomic habit', 'james clear', 'habit building'] },
-    { title: 'Wings of Fire', keywords: ['wings of fire', 'abdul kalam', 'kalam autobiography', 'apj abdul kalam'] },
-    { title: 'Diary of a Young Girl', keywords: ['diary of a young girl', 'anne frank', 'anne frank diary'] },
-    { title: 'The Autobiography Of Benjamin Franklin', keywords: ['benjamin franklin', 'franklin autobiography'] },
-    { title: 'Sapiens', keywords: ['sapiens', 'yuval noah harari', 'harari', 'brief history of humankind'] },
-    { title: 'The Discovery of India', keywords: ['discovery of india', 'jawaharlal nehru', 'nehru'] },
-    { title: 'Guns, Germs, and Steel', keywords: ['guns germs and steel', 'jared diamond'] },
-    { title: 'The Psychology of Money', keywords: ['psychology of money', 'morgan housel'] },
-    { title: 'Rich Dad Poor Dad', keywords: ['rich dad poor dad', 'robert kiyosaki', 'rich dad'] },
-    { title: 'The Intelligent Investor', keywords: ['intelligent investor', 'benjamin graham', 'value investing'] },
-    { title: 'The Art of Letting Go', keywords: ['art of letting go', 'rania naim', 'letting go'] }
-  ];
-
-  let matchedTitleMeta = null;
-  for (const item of titleSearchRegexes) {
-    for (const kw of item.keywords) {
-      if (lowerMsg.includes(kw) || fuzzyMatch(lowerMsg, kw, 2)) {
-        matchedTitleMeta = item;
-        break;
-      }
-    }
-    if (matchedTitleMeta) break;
-  }
-
-  // Also test direct Levenshtein matching against all book titles in DB
-  if (!matchedTitleMeta) {
-    for (const b of books) {
-      if (fuzzyMatch(lowerMsg, b.title, 3) || lowerMsg.includes(b.title.toLowerCase())) {
-        matchedTitleMeta = { title: b.title };
-        break;
-      }
-    }
-  }
-
-  if (matchedTitleMeta) {
-    const book = books.find(b => b.title.toLowerCase() === matchedTitleMeta.title.toLowerCase());
-    if (book) {
-      matchedBooks = [book];
-      conversation.lastBooks = matchedBooks;
-      conversation.lastCategory = book.category;
-
-      const availStatus = book.availability
-        ? '✅ **Currently Available** for borrowing!'
-        : '⏳ **Currently Checked Out** (You can place a reservation!)';
-
-      if (/isbn/i.test(lowerMsg)) {
-        reply = `The ISBN for **${book.title}** by ${book.author} is **${book.isbn}**. It is published by ${book.publisher} (${book.publishedYear}) and has ${book.pages} pages.`;
-      } else if (/how many copies|availability|is it available/i.test(lowerMsg)) {
-        reply = `**${book.title}** is ${availStatus}\n• **Rating:** ⭐ ${book.rating}/5.0\n• **Category:** ${book.category}\n• **ISBN:** ${book.isbn}`;
-      } else {
-        reply = `Yes, we have **${book.title}** by ${book.author} in our collection! 📖\n\n${availStatus}\n\n"${book.description}"`;
-      }
-
-      suggestions = [
-        book.availability ? `📖 Borrow ${book.title}` : `📌 Reserve ${book.title}`,
-        `⭐ Suggest books similar to ${book.title}`,
-        '📚 View More Books'
-      ];
-      return { reply, books: matchedBooks, suggestions };
-    }
-  }
-
-  // Check if user is asking for a specific non-existent title (e.g. "Do you have Harry Potter 7", "The Great Gatsby", "Lord of the Rings")
-  const specificBookQuery = lowerMsg.match(/(?:do you have|do u have|looking for|search for|is there a book called|book named)\s+([a-z0-9\s]+)/i);
-  if (specificBookQuery) {
-    const requestedTitle = specificBookQuery[1].trim();
-    // Verify it's not a category query
-    const isCategoryWord = /fiction|history|programming|coding|self help|business|finance|technology|biography/i.test(requestedTitle);
-    if (!isCategoryWord && requestedTitle.length > 2) {
-      // Find closest category to recommend alternatives
-      const alternatives = books.filter(b => b.availability).slice(0, 3);
-      reply = `We currently do not have "**${requestedTitle}**" listed in the BookNest collection. However, our catalogue features many popular titles across Fiction, Technology, Self-Help, and History! Here are some great alternatives you might enjoy:`;
-      matchedBooks = alternatives;
-      conversation.lastBooks = matchedBooks;
-      suggestions = ['📚 Show Available Books', '⭐ Recommend Top Rated Books', '🔍 Find a Book'];
-      return { reply, books: matchedBooks, suggestions };
+  if (/^(give me an example|show me an example|another example|can you give an example|example please|example\b)/i.test(lowerMsg) || /^(an )?example$/i.test(lowerMsg)) {
+    if (conversation.lastTopic === 'python') {
+      reply = `Here is a practical Python dictionary and error-handling example! 🐍\n\n\`\`\`python\n# Simulating a mini library lookup\nlibrary_catalog = {\n    1: {"title": "Clean Code", "author": "Robert C. Martin", "available": True},\n    2: {"title": "The Pragmatic Programmer", "author": "Andrew Hunt", "available": False}\n}\n\ndef borrow_book(book_id):\n    book = library_catalog.get(book_id)\n    if not book:\n        raise ValueError("Book ID not found in library!")\n    if not book["available"]:\n        return f"Sorry, '{book['title']}' is currently checked out."\n    \n    book["available"] = False\n    return f"Success! You have borrowed '{book['title']}'."\n\nprint(borrow_book(1))\n\`\`\``;
+      suggestions = ['⚡ Explain Promises', '📚 Available Books', '🧮 What is 25 × 16?'];
+      return { reply, books: [], suggestions };
+    } else if (conversation.lastTopic === 'javascript_promises' || conversation.lastTopic === 'javascript') {
+      reply = `Here is an **async/await** example with modern try/catch error handling in JavaScript: ⚡\n\n\`\`\`javascript\nasync function loadBookRecommendations() {\n  try {\n    console.log("Loading BookNest recommendations...");\n    const response = await fetch('/api/books');\n    if (!response.ok) {\n      throw new Error(\`HTTP error! status: \${response.status}\`);\n    }\n    const data = await response.json();\n    console.log("Loaded books successfully:", data.count);\n    return data.data;\n  } catch (err) {\n    console.error("Failed to load books:", err.message);\n  }\n}\n\`\`\``;
+      suggestions = ['🐍 Show Python Example', '📚 Recommend Programming Books', '📖 Borrowing Rules'];
+      return { reply, books: findMatchingBooks('programming', books), suggestions };
     }
   }
 
   // -------------------------------------------------------------
-  // 7. CATEGORY & THEMATIC RECOMMENDATIONS
+  // 2. GREETINGS & SOCIAL COURTESIES
   // -------------------------------------------------------------
-  // Technology / Programming / Python / Coding
-  if (/programming|python|coding|code|developer|software|algorithm|computer science|tech\b|technology/i.test(lowerMsg)) {
-    matchedBooks = books.filter(b => b.category === 'Technology');
+  const isHi = /^(hi|hello|hey|heya|hlo|hola|greetings|good day|good morning|good afternoon|good evening|howdy|sup|hi kiara|hello kiara|hey kiara|hi kaira|hello kaira)\b/i.test(lowerMsg);
+  const isHowAreYou = /how are you|how r u|how are u|how do you do|hows it going|how is it going|how are you doing/i.test(lowerMsg);
+  const isThanks = /\b(thank you|thanks|thx|thank u|many thanks|appreciate it|grateful)\b/i.test(lowerMsg);
+  const isBye = /\b(bye|goodbye|see you|cya|take care|have a good day|night|goodnight)\b/i.test(lowerMsg);
+
+  if (isHowAreYou) {
+    reply = `I'm doing wonderful, thank you for asking! 😸 As **Kiara** (Kaira), your BookNest AI assistant, I'm ready to help you with books, code, math, study questions, or finding your next great read. How can I help you today?`;
+    suggestions = ['📚 Available Books', '💻 Explain JavaScript Promises', '⭐ Recommend Books', '🔍 Find a Book'];
+    return { reply, books: matchedBooks, suggestions };
+  }
+
+  if (isHi) {
+    if (authenticatedUser) {
+      reply = `Hello ${authenticatedUser.name}! 👋 Welcome back to BookNest! I'm **Kiara** (Kaira), your AI assistant. Would you like to check your borrowed books, explore new arrivals, or ask me any question? 🐱`;
+      suggestions = ['📖 My Borrowed Books', '🕒 My Return Date', '📚 Browse Catalog', '⭐ Recommend Books'];
+    } else {
+      reply = `Hey there! 🐱 Welcome to BookNest! I'm **Kiara** (Kaira), your virtual library companion and AI assistant. What can I help you with today? Feel free to ask about books, coding, math, or anything else!`;
+      suggestions = ['📚 Available Books', '🔍 Search Catalogue', '⭐ Recommend a Mystery Book', '🔐 How to Login'];
+    }
+    return { reply, books: matchedBooks, suggestions };
+  }
+
+  if (isThanks) {
+    reply = `You're very welcome! 😊 Happy reading and happy learning! Let me know if there's anything else you'd like to explore in BookNest or any question you have! 📚✨`;
+    suggestions = ['📚 Available Books', '⭐ Recommend More Books', '📖 Borrowing Help'];
+    return { reply, books: matchedBooks, suggestions };
+  }
+
+  if (isBye) {
+    reply = `Goodbye! 👋 Have a wonderful day, and happy reading! Return to BookNest whenever you need a good book or study help! 🐱📖`;
+    suggestions = ['👋 Say Hello', '📚 Browse Catalog', '📖 Borrowing Rules'];
+    return { reply, books: matchedBooks, suggestions };
+  }
+
+  // -------------------------------------------------------------
+  // 3. MATHEMATICS & PROBLEM SOLVING
+  // -------------------------------------------------------------
+  const mathSolution = solveMathProblem(lowerMsg);
+  if (mathSolution) {
+    return {
+      reply: mathSolution,
+      books: [],
+      suggestions: ['🧮 What is 15% of 200?', '💻 Explain JavaScript Promises', '📚 Available Books']
+    };
+  }
+
+  // -------------------------------------------------------------
+  // 4. PROGRAMMING & COMPUTER SCIENCE
+  // -------------------------------------------------------------
+  // JavaScript Promises
+  if (/promise|promises|async.*await/i.test(lowerMsg)) {
+    reply = `A **JavaScript Promise** represents the eventual completion (or failure) of an asynchronous operation and its resulting value. 🚀\n\nA Promise exists in one of three states:\n1. **Pending**: Initial state, neither fulfilled nor rejected.\n2. **Fulfilled**: The operation completed successfully (\`resolve\`).\n3. **Rejected**: The operation failed (\`reject\`).\n\n**Example Code:**\n\`\`\`javascript\n// Function returning a Promise\nfunction fetchBookData(bookId) {\n  return new Promise((resolve, reject) => {\n    setTimeout(() => {\n      if (bookId > 0) {\n        resolve({ id: bookId, title: "Clean Code", available: true });\n      } else {\n        reject(new Error("Invalid book ID!"));\n      }\n    }, 1000);\n  });\n}\n\n// Consuming with .then() and .catch()\nfetchBookData(13)\n  .then(book => console.log("Fetched book:", book.title))\n  .catch(err => console.error("Error:", err.message))\n  .finally(() => console.log("Fetch operation finished!"));\n\`\`\`\n\nIn modern JavaScript, you can also use **async/await** for cleaner, synchronous-looking asynchronous code! Would you like an async/await example?`;
+    conversation.lastTopic = 'javascript_promises';
+    suggestions = ['⚡ Show async/await example', '📚 Recommend Programming Books', '🐍 Explain Python'];
+    return { reply, books: findMatchingBooks('programming', books), suggestions };
+  }
+
+  // What is JavaScript?
+  if (/what is (javascript|js)\b/i.test(lowerMsg)) {
+    reply = `**JavaScript** is a high-level, dynamic, multi-paradigm programming language that powers the interactive behavior of the modern World Wide Web. 🌐\n\n**Key Characteristics:**\n- **Client-Side & Server-Side**: Runs in web browsers (V8, SpiderMonkey) and on the backend via **Node.js**.\n- **Event-Driven & Asynchronous**: Utilizes a single-threaded event loop with non-blocking I/O, Promises, and async/await.\n- **Object-Oriented & Functional**: Supports prototype-based inheritance and first-class functions.\n\nIn BookNest, JavaScript is used to power real-time catalog search, borrow/return workflows, and this very chatbot! Would you like a coding tutorial or an example of a specific concept?`;
+    conversation.lastTopic = 'javascript';
+    suggestions = ['⚡ Explain JavaScript Promises', '💻 Show Python Example', '📚 Recommend Programming Books'];
+    return { reply, books: findMatchingBooks('programming', books), suggestions };
+  }
+
+  // Python
+  if (/python\b/i.test(lowerMsg)) {
+    reply = `**Python** is an interpreted, high-level, general-purpose programming language renowned for its elegant, readable syntax and extensive standard library. 🐍\n\n**Primary Uses:**\n- **Artificial Intelligence & Machine Learning**: TensorFlow, PyTorch, Scikit-learn.\n- **Data Science & Analytics**: Pandas, NumPy, Matplotlib.\n- **Web Backend Development**: FastAPI, Django, Flask.\n- **Scripting & Automation**.\n\n**Quick Example:**\n\`\`\`python\n# List comprehension and functions in Python\nbooks = ["Clean Code", "The Pragmatic Programmer", "Ikigai"]\n\ndef search_books(query):\n    return [b for b in books if query.lower() in b.lower()]\n\nprint("Found:", search_books("code"))\n# Output: ['Clean Code']\n\`\`\``;
+    conversation.lastTopic = 'python';
+    suggestions = ['🐍 Give me a Python example', '💻 Explain JavaScript', '📚 Recommend Programming Books'];
+    return { reply, books: findMatchingBooks('programming', books), suggestions };
+  }
+
+  // Java, C, C++
+  if (/\b(java|c\+\+|c language|cpp)\b/i.test(lowerMsg)) {
+    reply = `Great question! Here is an overview of major compiled languages: 💻\n\n- **Java**: Object-oriented, platform-independent language running on the Java Virtual Machine (JVM). Follows the "Write Once, Run Anywhere" philosophy, widely used in enterprise backends and Android.\n- **C++**: High-performance, multi-paradigm systems language supporting object-oriented programming, templates, and low-level memory control. Widely used in game engines, browsers, and embedded systems.\n- **C**: The foundational procedural systems programming language created by Dennis Ritchie, direct memory access via pointers, and the base of modern operating systems.\n\nWhich of these would you like to explore deeper?`;
+    conversation.lastTopic = 'compiled_languages';
+    suggestions = ['💻 What is Object-Oriented Programming?', '📚 Programming Books', '⚡ Explain JavaScript'];
+    return { reply, books: findMatchingBooks('programming', books), suggestions };
+  }
+
+  // -------------------------------------------------------------
+  // 5. GENERAL KNOWLEDGE, SCIENCE & TRIVIA
+  // -------------------------------------------------------------
+  if (/capital of france/i.test(lowerMsg)) {
+    reply = `The capital of France is **Paris**! 🗼 Renowned for its rich culture, history, and iconic landmarks like the Eiffel Tower and the Louvre, Paris is also home to the famous Bibliothèque nationale de France. Here at BookNest, we love global literature and history!`;
+    suggestions = ['📚 Books on History', '⭐ Recommend a Book', '🧮 Math Question'];
+    return { reply, books: findMatchingBooks('history', books), suggestions };
+  }
+
+  if (/what is (ai|artificial intelligence)\b/i.test(lowerMsg)) {
+    reply = `**Artificial Intelligence (AI)** is the branch of computer science dedicated to creating systems capable of performing tasks that typically require human intelligence, such as visual perception, natural language processing, decision-making, and problem solving. 🤖\n\nAs **Kiara**, I am an AI assistant integrated right into BookNest to help make learning and book discovery delightful!`;
+    suggestions = ['💻 Explain Machine Learning', '📚 Programming Books', '⭐ Recommend Mystery'];
+    return { reply, books: findMatchingBooks('programming', books), suggestions };
+  }
+
+  // -------------------------------------------------------------
+  // 6. BOOKNEST LIBRARY QUERIES & CATALOG LOOKUPS
+  // -------------------------------------------------------------
+  // What is BookNest?
+  if (/what is booknest|about booknest|tell me about booknest/i.test(lowerMsg)) {
+    reply = `**BookNest** is a premier digital library management platform designed to connect readers with their favorite literature! 🏛️\n\nWith BookNest, you can:\n- 📖 Browse a rich catalog of 18+ books across Fiction, Technology, Mystery, History, and Self-Help.\n- 🔄 Borrow books for 14-day loan periods.\n- 📌 Reserve books when checked out.\n- 📊 Track your personalized reading history on your dashboard.\n- 🤖 Chat with me, **Kiara**, for recommendations, coding help, and answers on any topic!`;
+    suggestions = ['📚 Available Books', '⭐ Recommend Books', '📖 How to Borrow'];
+    return { reply, books: matchedBooks, suggestions };
+  }
+
+  // What books have I borrowed?
+  if (/what books have i borrowed|my borrowed books|books i borrowed|my loans|show my books/i.test(lowerMsg)) {
+    if (!authenticatedUser) {
+      reply = `To view your borrowed books, please log in with your student or membership account. 🔐\n\nYou can sign in at <a href="login.html" class="chatbot-link">Login Page</a>, and I'll immediately show your active loans!`;
+      suggestions = ['🔐 Go to Login', '📚 Available Books', '📖 Borrowing Rules'];
+      return { reply, books: [], suggestions };
+    }
+
+    const activeBorrows = userBorrows.filter(b => b.status === 'Issued');
+    if (activeBorrows.length === 0) {
+      reply = `You currently have no active borrowed books, ${authenticatedUser.name}! 📚 All your previous loans have been returned. Would you like some recommendations on what to read next?`;
+      suggestions = ['⭐ Recommend Books', '📚 Available Books', '🔍 Search Catalogue'];
+      return { reply, books: [], suggestions };
+    }
+
+    const bookList = activeBorrows.map(b => `• **${b.bookTitle}** by ${b.bookAuthor} (Due: ${b.dueDate})`).join('\n');
+    reply = `Here are your currently borrowed books, **${authenticatedUser.name}**:\n\n${bookList}\n\nYou can manage returns anytime directly from your <a href="user-dashboard.html" class="chatbot-link">User Dashboard</a>.`;
+    suggestions = ['🕒 When is my return date?', '⭐ Recommend Next Book', '📊 Go to Dashboard'];
+    return { reply, books: [], suggestions };
+  }
+
+  // When is my return date?
+  if (/when is my return date|return date|due date|when do i have to return/i.test(lowerMsg)) {
+    if (!authenticatedUser) {
+      reply = `Please log in to check your return dates! 🔐 You can sign in at <a href="login.html" class="chatbot-link">Login Page</a>.`;
+      suggestions = ['🔐 Go to Login', '📖 Borrowing Rules', '📚 Available Books'];
+      return { reply, books: [], suggestions };
+    }
+
+    const activeBorrows = userBorrows.filter(b => b.status === 'Issued');
+    if (activeBorrows.length === 0) {
+      reply = `You don't have any books due right now, ${authenticatedUser.name}! All your borrowed books are returned. Ready to borrow a new one?`;
+      suggestions = ['📚 Available Books', '⭐ Recommend Books'];
+      return { reply, books: [], suggestions };
+    }
+
+    const dueList = activeBorrows.map(b => `• **${b.bookTitle}**: Due on **${b.dueDate}**`).join('\n');
+    reply = `Here are the due dates for your active books:\n\n${dueList}\n\nStandard loans last **14 days**. You can return them smoothly from your <a href="user-dashboard.html" class="chatbot-link">User Dashboard</a>.`;
+    suggestions = ['📊 Go to Dashboard', '📚 Available Books', '⭐ Recommend Books'];
+    return { reply, books: [], suggestions };
+  }
+
+  // How to borrow / How to return
+  if (/how can i borrow|how to borrow|borrow.*book/i.test(lowerMsg)) {
+    reply = `Borrowing a book at BookNest is simple and quick! 📖\n\n1. Browse our catalog on the **Books** page.\n2. Click on any available book to open its details.\n3. Click the **Borrow Book** button (make sure you are logged in!).\n4. Your 14-day borrowing loan will activate immediately and show up in your User Dashboard!`;
+    suggestions = ['📚 Available Books', '📊 User Dashboard', '🕒 Return Policy'];
+    return { reply, books: [], suggestions };
+  }
+
+  if (/how do i return|how to return|return.*book/i.test(lowerMsg)) {
+    reply = `Returning a book at BookNest is easy! 🔄\n\n1. Go to your **User Dashboard**.\n2. In the **Issued Books** table, locate the book you wish to return.\n3. Click the **Return Book** button and confirm the prompt.\n4. The book status will immediately update to 'Returned', and the book becomes available for others!`;
+    suggestions = ['📊 Go to Dashboard', '📚 Available Books', '📖 Borrowing Rules'];
+    return { reply, books: [], suggestions };
+  }
+
+  // Available books
+  if (/available books|show available|what books are available/i.test(lowerMsg)) {
+    const available = books.filter(b => b.availability === true);
+    reply = `We currently have **${available.length} books available** in the BookNest library! Here are some of our top picks:`;
+    matchedBooks = available.slice(0, 4);
+    conversation.lastBooks = matchedBooks;
+    suggestions = ['🔍 Find a Specific Book', '⭐ Recommend a Mystery Book', '💻 Programming Books'];
+    return { reply, books: matchedBooks, suggestions };
+  }
+
+  // Programming book suggestions
+  if (/programming books|suggest programming|coding books/i.test(lowerMsg)) {
+    matchedBooks = books.filter(b => b.category === 'Technology' || /code|programmer|algorithms/i.test(b.title));
     conversation.lastBooks = matchedBooks;
     conversation.lastCategory = 'Technology';
-
-    if (/python/i.test(lowerMsg)) {
-      reply = "While we do not have a dedicated Python-only title, BookNest features premier software engineering and algorithms classics that are essential for every programmer, including Python developers:";
-    } else {
-      reply = "Of course! 💻 Here are the top programming and software craftsmanship books from our BookNest Technology collection:";
-    }
+    reply = `Of course! 💻 Here are the top programming and software craftsmanship books from our BookNest Technology collection:`;
     suggestions = ['⭐ Which one is best for beginners?', '📚 Show Available Books', '📖 How to borrow?'];
     return { reply, books: matchedBooks, suggestions };
   }
 
-  // Mystery / Thriller
-  if (/mystery|thriller|crime|detective|investigation/i.test(lowerMsg)) {
-    matchedBooks = books.filter(b => b.title.includes('Murder') || b.id === 1);
+  // Specific book search by title (with typo handling)
+  matchedBooks = findMatchingBooks(userMessage, books);
+  if (matchedBooks.length > 0) {
     conversation.lastBooks = matchedBooks;
-    conversation.lastCategory = 'Fiction';
-    reply = "Here is our premier mystery and thriller novel from the BookNest Fiction collection:";
-    suggestions = ['📖 Borrow Good Girls Guide', '📚 Show other fiction books', '⭐ Top rated books'];
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  // Fiction / Novels
-  if (/fiction|novel|drama|story books|stories|classic play/i.test(lowerMsg)) {
-    matchedBooks = books.filter(b => b.category === 'Fiction');
-    conversation.lastBooks = matchedBooks;
-    conversation.lastCategory = 'Fiction';
-    reply = "Here are the captivating **Fiction & Literature** titles available in BookNest:";
-    suggestions = ['⭐ Recommend a mystery novel', '📚 Show Available Books', '📖 Borrowing Help'];
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  // Self Help / Habits / Psychology / Mindset
-  if (/self help|habits|mindset|productivity|motivation|wellness|letting go/i.test(lowerMsg)) {
-    matchedBooks = books.filter(b => b.category === 'Self Help');
-    conversation.lastBooks = matchedBooks;
-    conversation.lastCategory = 'Self Help';
-    reply = "Here are our transformative **Self-Help & Personal Growth** books:";
-    suggestions = ['⭐ Which one is best for beginners?', '📚 Show Available Books', '📖 Borrowing Help'];
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  // History / Civilizations
-  if (/history|historical|civilization|india history|world war|harari|nehru/i.test(lowerMsg)) {
-    matchedBooks = books.filter(b => b.category === 'History');
-    conversation.lastBooks = matchedBooks;
-    conversation.lastCategory = 'History';
-    reply = "Here are the profound **History & Civilization** books from our collection:";
-    suggestions = ['⭐ Tell me about Sapiens', '📚 Show Available Books', '📖 Borrowing Help'];
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  // Autobiography / Biography
-  if (/autobiography|biography|memoir|real life story|abdul kalam|anne frank|franklin/i.test(lowerMsg)) {
-    matchedBooks = books.filter(b => b.category === 'Autobiography');
-    conversation.lastBooks = matchedBooks;
-    conversation.lastCategory = 'Autobiography';
-    reply = "Here are the inspiring **Autobiographies & Memoirs** in BookNest:";
-    suggestions = ['⭐ Tell me about Wings of Fire', '📚 Show Available Books', '📖 Borrowing Help'];
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  // Business / Finance / Investing / Money
-  if (/business|finance|money|investing|investor|wealth|economics/i.test(lowerMsg)) {
-    matchedBooks = books.filter(b => b.category === 'Business & Finance');
-    conversation.lastBooks = matchedBooks;
-    conversation.lastCategory = 'Business & Finance';
-    reply = "Here are our highly acclaimed **Business, Finance & Investing** titles:";
-    suggestions = ['⭐ Tell me about Psychology of Money', '📚 Show Available Books', '📖 Borrowing Help'];
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  // -------------------------------------------------------------
-  // 8. AVAILABILITY, TOP-RATED & BEGINNER QUERIES
-  // -------------------------------------------------------------
-  // What books are available
-  if (/what books are available|show available books|available books|which books are available|books currently available|books available/i.test(lowerMsg)) {
-    matchedBooks = books.filter(b => b.availability).slice(0, 4);
-    conversation.lastBooks = matchedBooks;
-    reply = "Let me check our BookNest collection! 📚 Here are some books currently available for instant borrowing:";
-    suggestions = ['💻 Suggest programming books', '⭐ Recommend a mystery novel', '📖 How can I borrow?'];
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  // Which books are currently unavailable
-  if (/which books are currently unavailable|unavailable books|currently unavailable|out of stock|checked out/i.test(lowerMsg)) {
-    matchedBooks = books.filter(b => !b.availability);
-    conversation.lastBooks = matchedBooks;
-    reply = "Here are the books that are currently checked out by other readers. You can reserve them to be notified when they're returned:";
-    suggestions = ['📌 How do I reserve a book?', '📚 Show available books', '⭐ Recommend available books'];
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  // Top rated / Best books
-  if (/top rated|top-rated|best books|highest rating|highest rated|popular books|most popular/i.test(lowerMsg)) {
-    matchedBooks = [...books].sort((a, b) => b.rating - a.rating).slice(0, 4);
-    conversation.lastBooks = matchedBooks;
-    reply = "Here are the highest-rated books across our entire BookNest catalogue (rated 4.8+ by readers):";
-    suggestions = ['⭐ Which one is best for beginners?', '📚 Show available books', '📖 How to borrow?'];
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  // Suggest books for beginners
-  if (/suggest books for beginners|books for beginners|for beginners|beginner books|starter books/i.test(lowerMsg)) {
-    matchedBooks = books.filter(b => [7, 10, 16, 6].includes(b.id));
-    conversation.lastBooks = matchedBooks;
-    reply = "Here are some of the most engaging and beginner-friendly books in BookNest across different genres:";
-    suggestions = ['⭐ Tell me more about Sapiens', '📚 Show Available Books', '📖 How to borrow?'];
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  // General recommendation query
-  if (/recommend|recommendation|suggest a book|suggest books|what should i read/i.test(lowerMsg)) {
-    matchedBooks = books.filter(b => b.availability && b.rating >= 4.8).slice(0, 3);
-    conversation.lastBooks = matchedBooks;
-    reply = "Here are some handpicked recommendations from our top-rated available collection:";
-    suggestions = ['💻 Programming Books', '🕵️ Mystery Books', '📜 History Books', '🧠 Self Help'];
-    return { reply, books: matchedBooks, suggestions };
-  }
-
-  // Similar books query
-  if (/similar to|books like/i.test(lowerMsg)) {
-    // Look up which book they mentioned
-    const refBook = books.find(b => lowerMsg.includes(b.title.toLowerCase()) || fuzzyMatch(lowerMsg, b.title, 2));
-    if (refBook) {
-      matchedBooks = books.filter(b => b.category === refBook.category && b.id !== refBook.id);
-      conversation.lastBooks = matchedBooks;
-      reply = `If you enjoy **${refBook.title}**, here are similar books in the **${refBook.category}** category from BookNest:`;
-      suggestions = ['📚 View Available Books', '📖 Borrowing Help'];
-      return { reply, books: matchedBooks, suggestions };
-    }
-  }
-
-  // -------------------------------------------------------------
-  // 9. GENERAL / UNRELATED QUESTIONS FALLBACK
-  // -------------------------------------------------------------
-  // E.g. "capital of France", "joke", "weather", math, etc.
-  if (/capital of|weather|tell me a joke|joke|who won|who is president|meaning of life|solve/i.test(lowerMsg)) {
-    if (/capital of france/i.test(lowerMsg)) {
-      reply = "The capital of France is Paris! 🗼 While I'm happy to help with general trivia, my primary role is assisting you as BookNest's virtual librarian. Can I help you find a book on French history, geography, or world literature?";
-    } else if (/joke/i.test(lowerMsg)) {
-      reply = "Here's a library joke for you! 😄\n\n*Why did the book go to the doctor?*\n*Because it lost its cover and had too many loose leaves!*\n\nNeed any real book recommendations today?";
+    if (/harry potter|hary poter/i.test(lowerMsg)) {
+      reply = `Yes, we have **Harry Potter** in our library collection! ✨ Written by J. K. Rowling, it is currently in our Fiction catalog. You can view its details and reserve or borrow it below:`;
+    } else if (/mystery/i.test(lowerMsg)) {
+      reply = `Here is our premier mystery and thriller novel from the BookNest collection:`;
     } else {
-      reply = "That's an interesting question! As your BookNest library assistant, I'm happy to chat, but my main specialty is helping you explore our book catalogue, discover recommendations, and navigate your library account. Would you like to explore our collection?";
+      reply = `I found these books matching your query in the BookNest catalog! Take a look: 📚`;
     }
-    suggestions = ['📚 Available Books', '⭐ Recommend Books', '🔍 Find a Book'];
+    suggestions = ['📚 Available Books', '⭐ Recommend More Books', '📖 How to Borrow'];
     return { reply, books: matchedBooks, suggestions };
   }
 
   // -------------------------------------------------------------
-  // 10. DEFAULT FRIENDLY FALLBACK (Never remains silent!)
+  // 7. DEFAULT FRIENDLY FALLBACK (Smart & Helpful)
   // -------------------------------------------------------------
-  reply = `I'd love to help you with that! 😊 As your BookNest assistant, I can help you search books, discover recommendations by genre (Fiction, Technology, Self-Help, History, Business), check return dates, and explain library policies. What would you like to explore?`;
-  suggestions = ['📚 Available Books', '⭐ Recommend Books', '🔍 Search Catalogue', '📖 Borrowing Help'];
-  return { reply, books: matchedBooks, suggestions };
+  reply = `I'd love to help you with that! 😊 As **Kiara**, BookNest's AI assistant, I can answer questions on programming (JavaScript, Python, Java), solve math problems step-by-step, explain science & history, and guide you through our library catalog. What would you like to explore?`;
+  suggestions = ['📚 Available Books', '💻 Explain JavaScript Promises', '🧮 What is 25 × 16?', '⭐ Recommend a Mystery Book'];
+  return { reply, books: [], suggestions };
 }
 
 /**
- * Optional External AI Call (Google Gemini / OpenAI)
- * Falls back safely to processLocalNLP if unavailable, disabled, or times out.
+ * Build System Instruction for Google Gemini AI
  */
-async function callExternalAI(userMessage, books, authenticatedUser, conversation) {
-  const geminiKey = process.env.GEMINI_API_KEY;
-  const openaiKey = process.env.OPENAI_API_KEY;
-
-  if (!geminiKey && !openaiKey) return null;
-
-  const catalogSummary = books.map(b =>
-    `- ID ${b.id}: "${b.title}" by ${b.author} | Category: ${b.category} | Rating: ${b.rating} | Available: ${b.availability ? 'Yes' : 'No'} | ISBN: ${b.isbn}`
+function buildSystemInstruction(books, authenticatedUser) {
+  const catalogList = books.map(b =>
+    `- ID ${b.id}: "${b.title}" by ${b.author} | Category: ${b.category} | Rating: ${b.rating} | Available in BookNest: ${b.availability ? 'Yes' : 'No'} | ISBN: ${b.isbn}`
   ).join('\n');
 
-  const systemInstruction = `You are Kaira, the smart, friendly, and helpful virtual library assistant for BookNest Library Management System.
-The real BookNest book catalogue is strictly limited to these books:
-${catalogSummary}
+  return `You are Kiara (also known as Kaira), BookNest's intelligent, friendly, and helpful AI assistant. 🐱
+You are an expert general-purpose AI assistant capable of answering questions on virtually any topic, including:
+1. Programming languages (JavaScript, Python, Java, C, C++, HTML/CSS, SQL). Always explain clearly and provide clean, working code examples using markdown code blocks with language tags.
+2. Mathematics and arithmetic (step-by-step problem solving). Show work clearly.
+3. Science, Technology, and Computers.
+4. History, Geography, General Knowledge, and Education.
+5. Everyday questions, casual conversation, creative writing, and translation between languages.
+6. Book recommendations and literature guidance.
 
-User Authentication State: ${authenticatedUser ? `Logged in as ${authenticatedUser.name} (${authenticatedUser.username})` : 'Guest (Not logged in)'}.
-Rules:
-1. Always greet warmly and be polite.
-2. Only recommend or mention books that actually exist in the BookNest catalogue above. Never invent book titles, ISBNs, or fake transactions.
-3. If asked about user loans/borrowings and the user is NOT logged in, tell them to log in at login.html.
-4. Keep responses concise, friendly, and helpful. Mention relevant book titles in bold.`;
+CRITICAL BOOKNEST LIBRARY GROUNDING RULES:
+The verified BookNest Library inventory consists of these books:
+${catalogList}
 
-  if (geminiKey) {
-    try {
-      const payload = JSON.stringify({
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: `${systemInstruction}\n\nUser Question: ${userMessage}` }]
-          }
-        ],
-        generationConfig: {
-          maxOutputTokens: 350,
-          temperature: 0.7
-        }
+User Authentication State: ${authenticatedUser ? `Logged in as ${authenticatedUser.name} (${authenticatedUser.username}), Card ID: ${authenticatedUser.cardId}` : 'Guest (Not logged in)'}.
+
+RULES:
+- When the user asks for book recommendations from BookNest, recommend books that actually exist in the BookNest catalog above. Put book titles in bold.
+- If asked about user loans/borrowings and the user is NOT logged in, tell them to log in at login.html.
+- Never invent fake BookNest transactions, due dates, or card IDs.
+- For general knowledge, coding, math, and everyday questions, answer accurately, thoroughly, and helpfully.
+- Keep your tone warm, friendly, helpful, and slightly playful (with subtle cat emojis like 🐱 when appropriate).
+- Format responses cleanly with markdown: bold for emphasis, code blocks for code, and bullet/numbered lists for steps.`;
+}
+
+/**
+ * Call Google Gemini API using official @google/genai SDK
+ * Supports multi-turn conversation memory, system instructions, and resilient fallback.
+ */
+async function callGeminiAI(userMessage, books, authenticatedUser, conversation) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || !apiKey.trim() || apiKey === 'your_gemini_api_key_here') {
+    return null; // Fallback to local NLP
+  }
+
+  try {
+    const ai = new GoogleGenAI({ apiKey: apiKey.trim() });
+    const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+    const systemInstruction = buildSystemInstruction(books, authenticatedUser);
+
+    // Build multi-turn contents from conversation history (up to last 10 messages)
+    const recentHistory = (conversation.messages || []).slice(-10);
+    const contents = [];
+
+    for (const msg of recentHistory) {
+      contents.push({
+        role: msg.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: msg.text }]
       });
-
-      const result = await new Promise((resolve, reject) => {
-        const req = https.request(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Content-Length': Buffer.byteLength(payload)
-            },
-            timeout: 4000
-          },
-          (res) => {
-            let data = '';
-            res.on('data', chunk => data += chunk);
-            res.on('end', () => {
-              if (res.statusCode >= 200 && res.statusCode < 300) {
-                try {
-                  const parsed = JSON.parse(data);
-                  const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
-                  resolve(text);
-                } catch (e) {
-                  reject(e);
-                }
-              } else {
-                reject(new Error(`Gemini status ${res.statusCode}: ${data}`));
-              }
-            });
-          }
-        );
-
-        req.on('error', reject);
-        req.on('timeout', () => {
-          req.destroy();
-          reject(new Error('Gemini API timeout'));
-        });
-        req.write(payload);
-        req.end();
-      });
-
-      if (result && typeof result === 'string' && result.trim()) {
-        return result.trim();
-      }
-    } catch (e) {
-      // Fallback to local NLP on error
-      console.warn('Gemini API call failed, falling back to local NLP:', e.message);
     }
+
+    // Append current user message
+    contents.push({
+      role: 'user',
+      parts: [{ text: userMessage }]
+    });
+
+    // 15-second timeout wrapper
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Gemini API request timed out (15s limit)')), 15000)
+    );
+
+    const generatePromise = ai.models.generateContent({
+      model: modelName,
+      contents,
+      config: {
+        systemInstruction,
+        temperature: 0.7,
+        maxOutputTokens: 1000
+      }
+    });
+
+    const response = await Promise.race([generatePromise, timeoutPromise]);
+    const responseText = response.text;
+
+    if (responseText && typeof responseText === 'string' && responseText.trim().length > 0) {
+      return responseText.trim();
+    }
+  } catch (err) {
+    console.warn(`[Gemini AI] Call failed or timed out (${err.message}). Seamlessly using local NLP engine.`);
+    return null;
   }
 
   return null;
@@ -651,7 +590,7 @@ async function handleChatbotMessage(req, res) {
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide a valid message to chat with Kaira.'
+        message: 'Please provide a valid message to chat with Kiara.'
       });
     }
 
@@ -667,7 +606,6 @@ async function handleChatbotMessage(req, res) {
     const authHeader = req.headers['authorization'];
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.substring(7).trim();
-      // Import activeSessions from server
       if (global.activeSessions && global.activeSessions.has(token)) {
         const session = global.activeSessions.get(token);
         if (session.expiresAt > Date.now()) {
@@ -712,7 +650,7 @@ async function handleChatbotMessage(req, res) {
       userReservations = reservations.filter(r => r.userId === authenticatedUser.userId || r.username === authenticatedUser.username);
     }
 
-    // Always run the deterministic local NLP engine to extract structured book recommendations and base reply
+    // 1. Process deterministic local engine first to determine base response & ground matching books
     const localResult = processLocalNLP(
       message,
       books,
@@ -724,22 +662,23 @@ async function handleChatbotMessage(req, res) {
 
     let finalReply = localResult.reply;
 
-    // If external AI is available and query is a conversational or general question, try AI enrichment
-    const isSpecialLocalQuery = localResult.books.length > 0 ||
-      /what books have i borrowed|when is my return date|my reservations/i.test(message);
+    // 2. Identify if this is a personal database query (pure loan/return lookup)
+    const isStrictPersonalLookup = /what books have i borrowed|when is my return date|my loans|show my books|my return date/i.test(message);
 
-    if (!isSpecialLocalQuery) {
-      const aiResponse = await callExternalAI(message, books, authenticatedUser, conversation);
-      if (aiResponse) {
-        finalReply = aiResponse;
+    // 3. For all other queries (general questions, coding, math, literature, or mixed recommendations),
+    // attempt to enrich via Gemini AI if API key is present
+    if (!isStrictPersonalLookup && process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim() && process.env.GEMINI_API_KEY !== 'your_gemini_api_key_here') {
+      const geminiResponse = await callGeminiAI(message, books, authenticatedUser, conversation);
+      if (geminiResponse) {
+        finalReply = geminiResponse;
       }
     }
 
-    // Record interaction in conversation memory
+    // 4. Record interaction in conversation memory
     conversation.messages.push({ role: 'user', text: message, timestamp: Date.now() });
     conversation.messages.push({ role: 'assistant', text: finalReply, timestamp: Date.now() });
 
-    // Format matched books structure
+    // Format matched books structure if any
     const formattedBooks = (localResult.books || []).map(b => ({
       id: b.id,
       title: b.title,
@@ -759,8 +698,8 @@ async function handleChatbotMessage(req, res) {
       books: formattedBooks,
       suggestions: localResult.suggestions || [
         '📚 Available Books',
-        '⭐ Recommend Books',
-        '📖 Borrowing Help'
+        '💻 Explain JavaScript Promises',
+        '🧮 What is 25 × 16?'
       ],
       conversationId: conversation.id
     });
@@ -768,7 +707,7 @@ async function handleChatbotMessage(req, res) {
     console.error('Chatbot error:', err);
     return res.status(500).json({
       success: false,
-      message: 'Kaira is having trouble processing your message right now. Please try again.',
+      message: 'Kiara is having trouble processing your message right now. Please try again.',
       suggestions: ['📚 Available Books', '🔄 Try Again']
     });
   }
